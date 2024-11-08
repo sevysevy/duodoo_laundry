@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Supprimer Catégorie de Dépense{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Supprimer Catégorie de Dépense</h2>
+    <p>Êtes-vous sûr de vouloir supprimer la catégorie <strong>{{ category.name }}</strong> ?</p>
+    <form method="post" action="{% url 'expense_category_delete' category.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Supprimer</button>
+        <a href="{% url 'expense_category_list' %}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-danger text-white">
+            <h2 class="card-title mb-0" style="color: #fff;;">Confirmer la Suppression</h2>
+        </div>
+        <div class="card-body">
+            <p>Êtes-vous sûr de vouloir supprimer <strong> la Commande {{ order.id }} de {{order.client.fullName}}</strong> ?</p>
+            <div class="d-flex justify-content-between">
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Oui, supprimer</button>
+                </form>
+                <a href="{% url 'itemtype_list' %}" class="btn btn-secondary">Annuler</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

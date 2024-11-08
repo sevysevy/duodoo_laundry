@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ form.instance.pk|yesno:"Modifier le type de vêtement,Créer un type de vêtement" }}{% endblock %}
+{% block header %}{{ form.instance.pk|yesno:"Modifier le type de vêtement,Créer un type de vêtement" }}{% endblock %}
+
+{% block content %}
+<h2>{{ form.instance.pk|yesno:"Modifier le type de vêtement,Créer un type de vêtement" }}</h2>
+
+<div class="form-container">
+    <form method="post" class="styled-form">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Enregistrer
+        </button>
+        <a href="{% url 'itemtype_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Annuler
+        </a>
+    </form>
+</div>
+{% endblock %}

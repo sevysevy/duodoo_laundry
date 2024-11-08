@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Enregistrer un Paiement{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Enregistrer un Paiement pour Commande #{{ order.id }}</h2>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Montant Total: {{ order.total }} Fcfa</h5>
+            <h5>Reste a payer: {{ order.balance }} Fcfa</h5>
+        </div>
+    </div>
+
+    <form method="post" id="paymentForm">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">Enregistrer le Paiement</button>
+    </form>
+</div>
+
+<script>
+    // Optionally handle form submission via AJAX
+    $('#paymentForm').submit(function(e) {
+        e.preventDefault();
+        const formData = $(this).serialize();
+        
+        $.ajax({
+            type: 'POST',
+            url: '{% url "register_payment" order.id %}',
+            data: formData,
+            success: function(response) {
+                if (response.result === "success") {
+                    alert("Paiement enregistré avec succès!");
+                    window.location.href = `{% url 'order_detail' order.id %}`;
+                } else {
+                    alert("Erreur: " + JSON.stringify(response.errors));
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

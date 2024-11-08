@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Liste des Dépenses{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Liste des Dépenses</h2>
+    <a href="{% url 'expense_create' %}" class="btn btn-primary mb-3">Ajouter une nouvelle dépense</a>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Type de depense</th>
+                <th>Partenaire</th>
+                <th>Description</th>
+                <th>Montant</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.category.name }}</td>
+                <td>{{ expense.partner.fullName }}</td>
+                <td>{{ expense.description }}</td>
+                <td>{{ expense.amount }}</td>
+                <td>{{ expense.date }}</td>
+                <td>
+                    <a href="{% url 'expense_update' expense.id %}" class="btn btn-sm btn-warning">Modifier</a>
+                    <a href="{% url 'expense_delete' expense.id %}" class="btn btn-sm btn-danger">Supprimer</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

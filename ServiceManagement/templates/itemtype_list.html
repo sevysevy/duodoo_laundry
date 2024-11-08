@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Type de vetement</h2>
+
+<div style="text-align: right; margin-bottom: 10px;">
+    <a href="{% url 'itemtype_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Ajouter un type de vetement
+    </a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Catégorie</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item_type in item_types %}
+        <tr>
+            <td>{{ item_type.name }}</td>
+            <td>{{ item_type.category.name }}</td>
+            <td>
+                <a href="{% url 'itemtype_update' item_type.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+                <a href="{% url 'itemtype_delete' item_type.pk %}" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Supprimer
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="pagination">
+    {% if item_type.has_previous %}
+        <a href="?page=1" class="pagination-link first">&laquo; Premiere page</a>
+        <a href="?page={{ item_type.previous_page_number }}" class="pagination-link prev">Precedent</a>
+    {% endif %}
+
+    {% for num in item_type.paginator.page_range %}
+        {% if item_type.number == num %}
+            <span class="pagination-link active">{{ num }}</span>
+        {% elif num > item_type.number|add:-3 and num < item_type.number|add:3 %}
+            <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if item_type.has_next %}
+        <a href="?page={{ item_type.next_page_number }}" class="pagination-link next">Suivant</a>
+        <a href="?page={{ item_type.paginator.num_pages }}" class="pagination-link last">Derniere page &raquo;</a>
+    {% endif %}
+</div>
+{% endblock %}

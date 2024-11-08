@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ form.instance.pk|yesno:"Modifier le service,Créer un service" }}{% endblock %}
+{% block header %}{{ form.instance.pk|yesno:"Modifier le service,Créer un service" }}{% endblock %}
+
+{% block content %}
+<h2>{{ form.instance.pk|yesno:"Modifier le service,Créer un service" }}</h2>
+
+<div class="form-container">
+    <form method="post" class="styled-form">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
+    </form>
+</div>
+{% endblock %}

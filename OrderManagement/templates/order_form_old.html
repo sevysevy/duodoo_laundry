@@ -1,0 +1,666 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Prise de Commande{% endblock %}
+
+{% block content %}
+
+    <h2>Prise de Commande</h2>
+
+    <!-- Client Information Section -->
+    <form id="orderForm" method="post">
+        {% csrf_token %}
+        <div class="card mb-4 shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Informations du Client</h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <label for="client" class="form-label fw-bold">Client</label>
+                        <div class="input-group">
+                            <!-- Searchable Dropdown for Client -->
+                            <select id="client" name="client" class="form-select" required>
+                                <option value="">Sélectionner un Client</option>
+                                <!-- Options will be populated here -->
+                            </select>
+                            <button type="button" class="btn btn-primary ms-2" onclick="openAddClientModal()">
+                                <i class="fas fa-user-plus"></i> Nouveau Client
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Multiple Order Items Section (Hidden Initially) -->
+        <div class="card mb-4" id="addOrderItemsSection" style="display: none;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title">Ajouter des Articles de Commande</h5>
+                    <button type="button" class="btn btn-secondary" onclick="toggleAddOrderItemsSection()">Fermer</button>
+                </div>
+                
+                <table class="table" id="multiOrderItemsTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Type de Vêtement</th>
+                            <th>Caractéristique</th>
+                            <th>Service</th>
+                            <th>Remarque</th>
+                            <th>Prix Unitaire</th>
+                            <th>Quantité</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="multiOrderItemsBody">
+                        <!-- Rows will be dynamically added here -->
+                    </tbody>
+                </table>
+
+                <!-- Button to Add New Item Row and Confirm Items (Hidden Initially) -->
+                <button type="button" class="btn btn-primary" onclick="addNewItemRow()">Ajouter un Article</button>
+                <button type="button" class="btn btn-success" id="confirmItemsButton" style="display: none;" onclick="confirmItemsToOrder()">Confirmer les Articles</button>
+            </div>
+        </div>
+
+        <!-- Button to Show Add Order Items Section -->
+        <button type="button" class="btn btn-secondary mb-3" id="addArticlesButton" onclick="toggleAddOrderItemsSection()">Ajouter des Articles</button>
+
+        <!-- Order Items Section (Hidden Initially) -->
+        <div class="card mb-4" id="confirmedArticlesSection" style="display: none;">
+            <div class="card-body">
+                <h5 class="card-title">Articles de la Commande</h5>
+                <table class="table" id="orderItemsTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Type de Vêtement</th>
+                            <th>Caractéristique</th>
+                            <th>Service</th>
+                            <th>Remarque</th>
+                            <th>Prix Unitaire</th>
+                            <th>Quantité</th>
+                            <th>Total Ligne</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderItemsBody">
+                        <!-- Confirmed order items will be shown here -->
+                    </tbody>
+                </table>
+                <div class="mb-3">
+                    <label for="ristourne" class="form-label">Remise (-)</label>
+                    <input type="number" id="ristourne" name="ristourne" class="form-control" value="0" min="0" max="100" >
+                </div>
+
+                <h5 class="text-end">Total Commande: <span id="orderTotal">0.00</span> Fcfa</h5>
+                <h5 class="text-end text-success">Total après Ristourne: <span id="discountedTotal">0.00</span> Fcfa</h5>
+            </div>
+        </div>
+
+        <!-- Confirm Order Button (Hidden Initially) -->
+        <button type="submit" id="confirmOrderButton" class="btn btn-success" style="display: none;">Enregistrer la Commande</button>
+    </form>
+
+<!-- Modal for Adding New Client -->
+<!-- Modal for Adding a New Client -->
+<div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="addClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addClientModalLabel">Ajouter un Nouveau Client</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addClientForm">
+                    {% csrf_token %}
+
+                    <!-- Title and First Name on the Same Line -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="title" class="form-label">Titre</label>
+                            <select id="title" name="title" class="form-control" required>
+                                <option value="">Sélectionner un Titre</option>
+                                <option value="Mr">Mr</option>
+                                <option value="Mme">Mme</option>
+                                <option value="Mlle">Mlle</option>
+                                <option value="Entreprise">Entreprise</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label for="firstName" class="form-label">Prénom</label>
+                            <input type="text" id="firstName" name="firstName" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <!-- Last Name Field -->
+                    <div class="mb-3">
+                        <label for="lastName" class="form-label">Nom</label>
+                        <input type="text" id="lastName" name="lastName" class="form-control" required>
+                    </div>
+
+                    <!-- Phone Field -->
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Téléphone</label>
+                        <input type="text" id="phone" name="phone" class="form-control" required>
+                    </div>
+
+                    <!-- Ville and Quartier on the Same Line -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="ville" class="form-label">Ville</label>
+                            <input type="text" id="ville" name="ville" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="quartier" class="form-label">Quartier</label>
+                            <input type="text" id="quartier" name="quartier" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="button" class="btn btn-primary" onclick="submitNewClient()">Ajouter Client</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script id="orderItemTemplate" type="text/template">
+    <tr>
+        <td>
+            <select  name="item_type" class="form-control item-type">
+                <option value="">Choisir</option>
+                {% for category in categories %}
+                    <optgroup label="{{ category.name }}">
+                        {% for item_type in category.item_types.all %}
+                            <option value="{{ item_type.id }}">{{ item_type.name }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <select class="item-characteristic form-control">
+                <option value="">Choisir</option>
+                <!-- Options will be dynamically added here -->
+            </select>
+        </td>
+        <td>
+
+            <select class="service form-control">
+                <option value="">Choisir</option>
+                
+            </select>
+        </td>
+        <td>
+
+            <textarea class="description form-control"></textarea>
+        </td>
+        
+
+        <td><input type="text" class="form-control unit-price" readonly ></td>
+        <td><input type="number" class="form-control quantity" value="1" min="1" onchange="updateLineTotal(this)"></td>
+        <td><input type="text" class="form-control line-total" readonly></td>
+        <td><button type="button" class="btn btn-danger" onclick="removeNewItemRow(this)">Supprimer</button></td>
+    </tr>
+</script>
+
+
+
+<script>
+    // Initialize select2 for the client dropdown
+    $(document).ready(function() {
+        $('#client').select2({
+            placeholder: "Sélectionner un Client",
+            allowClear: true
+        });
+
+
+        fetchClients()
+
+        $(document).on("change", ".item-type, .item-characteristic , .service", function(){
+            fetchPrice()
+            
+        });
+
+        $(document).on("change", ".item-type", function() {
+            const row = $(this).closest('tr');  // Find the closest row for scoped manipulation
+            const itemTypeId = $(this).val();
+            const characteristicSelect = row.find('.item-characteristic');  // Target the characteristic dropdown in the same row
+            characteristicSelect.html('').append($('<option>', {
+                                    value: "",
+                                    text: "Choisir"
+                                }))
+            // Clear previous options in the Caractéristiques dropdown
+
+            // Fetch the characteristics based on the selected item type
+            if (itemTypeId) {
+                $.ajax({
+                    url: "{% url 'get_characteristics_for_item_type' %}",
+                    data: { 'item_type_id': itemTypeId },
+                    success: function(data) {
+                        // Populate the Caractéristiques dropdown with the fetched options
+                        data.forEach(function(characteristic) {
+                            characteristicSelect.append(
+                                $('<option>', {
+                                    value: characteristic.id,
+                                    text: characteristic.name
+                                })
+                            );
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching characteristics:", error);
+                    }
+                });
+            }
+        });
+
+        $(document).on("change", ".item-characteristic", function() {
+            const row = $(this).closest('tr');  // Find the closest row for scoped manipulation
+            const characId = $(this).val();
+            const characteristicSelect = row.find('.item-characteristic');  // Target the characteristic dropdown in the same row
+            const serviceSelect = row.find('.service');
+
+            serviceSelect.html('').append($('<option>', {
+                                    value: "",
+                                    text: "Choisir"
+                                }))
+
+            // Clear previous options in the Caractéristiques dropdown
+
+            // Fetch the characteristics based on the selected item type
+            if (characId) {
+                
+                $.ajax({
+                    url: "{% url 'get_sevice_for_item_type' %}",
+                    data: { 'charac_id': characId },
+                    success: function(data) {
+                        // Populate the Caractéristiques dropdown with the fetched options
+                        data.forEach(function(characteristic) {
+                            serviceSelect.append(
+                                $('<option>', {
+                                    value: characteristic.id,
+                                    text: characteristic.name
+                                })
+                            );
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching characteristics:", error);
+                    }
+                });
+            }
+        });
+
+
+
+        // Event listener for discount input changes
+        $('#ristourne').on('input', applyDiscount);
+
+
+        $('#confirmOrderButton').click(function(event) {
+            event.preventDefault();  // Prevent the default form submission
+
+            if($('#client').val() ==""){
+                alert("Vous devez renseigner le client avant de sauvegarder")
+                return false;
+            }
+            
+            // Serialize client and order details
+            const orderData = {
+                client: $('#client').val(),
+                ristourne: parseFloat($('#ristourne').val()) || 0,
+                total: parseFloat($('#discountedTotal').text()) || 0,
+                items: []
+            };
+
+            // Loop through each confirmed item row in #orderItemsBody and collect data
+            var i=0
+            $('#orderItemsBody tr').each(function() {
+                const itemData = {
+                    item_type: $(this).find('.item-type-text').attr("item-id"),
+                    characteristic: $(this).find('.characteristic-text').attr("item-id"),
+                    service: $(this).find('.service-text').attr("item-id"),
+                    unit_price: parseFloat($(this).find('.unit-price-text').text()) || 0,
+                    quantity: parseInt($(this).find('.quantity-text').text()) || 0,
+                    line_total: parseFloat($(this).find('.line-total-text').text()) || 0,
+                    description : $(this).find('.desc-text').text(),
+                };
+                orderData.items.push(itemData);
+                i++
+            });
+
+            // Make an AJAX POST request to send the order data to the backend
+            $.ajax({
+                url: "{% url 'order_create' %}",  // Replace with your actual URL name for creating orders
+                type: "POST",
+                data: {
+                    ...orderData,
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    count : i
+                },
+                success: function(response) {
+                    window.location.href = `{% url 'order_list' %}`
+                },
+                error: function(xhr, status, error) {
+                    alert("Une erreur s'est produite lors de l'enregistrement de la commande. Veuillez réessayer.");
+                    console.error("Error:", error);
+                }
+            });
+        });
+
+        toggleAddOrderItemsSection()
+    });
+
+
+    function fetchPrice() {
+        $('#multiOrderItemsTable tbody tr').each(function() {
+            // 'this' refers to the current row in the loop
+            const row = $(this);
+
+            const itemTypeId = row.find('.item-type').val();
+            const characteristicId = row.find('.item-characteristic').val();
+            const basePriceField = row.find('.unit-price'); 
+            const service = row.find('.service').val()
+            
+            if (itemTypeId && characteristicId && service) {
+            $.ajax({
+                url: "{% url 'get_price' %}",
+                data: {
+                    'item_type_id': itemTypeId,
+                    'characteristic_id': characteristicId,
+                    'service_id': service
+                },
+                success: function(data) {
+                    if (data.price !== null) {
+                        basePriceField.val(data.price);  // Set the price in the base price input
+                    } else {
+                        basePriceField.val("N/A");  // Handle case where no price is found
+                    }
+                    updateLineTotal(row.find('.quantity'))
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching price:", error);
+                    basePriceField.val("Error");  // Indicate error in fetching
+                }
+            });
+        } else {
+            basePriceField.val("");  // Clear base price if selection is incomplete
+        }
+        });
+         // Base price input in the same row
+
+
+        
+    }
+
+
+
+    function openAddClientModal() {
+        $('#addClientModal').modal('show');
+    }
+
+    function submitNewClient() {
+        const formData = {
+            'title': $('#title').val(),
+            'firstName': $('#firstName').val(),
+            'lastName': $('#lastName').val(),
+            'phone': $('#phone').val(),
+            'ville': $('#ville').val(),
+            'quartier': $('#quartier').val(),
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        };
+
+        $.ajax({
+            url: "{% url 'add_client' %}",  // URL for your add client view
+            type: "POST",
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    // Close the modal and reset the form
+                    $('#addClientModal').modal('hide');
+                    $('#addClientForm')[0].reset();
+                    location.reload();
+                    
+                    // Optionally, refresh the client dropdown here if needed
+                } else {
+                    alert("Erreur lors de l'ajout du client.");
+                }
+            },
+            error: function(xhr, status, error) {
+                alert("Une erreur s'est produite. Veuillez réessayer.");
+            }
+        });
+    }
+
+    function fetchClients() {
+            $.ajax({
+                url: "{% url 'get_customers' %}",
+                type: "GET",
+                success: function(data) {
+                    const clientSelect = $("#client");
+                    clientSelect.empty(); // Clear existing options
+                    clientSelect.append('<option value="">Sélectionner un Client</option>');
+                    data.forEach(function(client) {
+                        clientSelect.append(new Option(client.name, client.id));
+                    });
+                    clientSelect.select2({
+                        placeholder: "Sélectionner un Client",
+                        allowClear: true
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error("Erreur lors de la récupération des clients:", error);
+                }
+            });
+        }
+
+    function toggleAddOrderItemsSection() {
+        const section = document.getElementById("addOrderItemsSection");
+        const addButton = document.getElementById("addArticlesButton");
+
+        if (section.style.display === "none") {
+            section.style.display = "block";
+            addButton.style.display = "none";  // Hide the button when section is open
+            addNewItemRow();  // Automatically add the first item row when opened
+        } else {
+            section.style.display = "none";
+            addButton.style.display = "block";  // Show the button when section is closed
+            clearAddOrderItemsSection();  // Clear all rows when section is closed
+        }
+    }
+
+    function clearAddOrderItemsSection() {
+        $("#multiOrderItemsBody").empty();  // Clear all rows from the table body
+        $("#confirmItemsButton").hide();  // Hide the confirm button
+    }
+
+    function addNewItemRow() {
+        const template = $("#orderItemTemplate").html();
+        $("#multiOrderItemsBody").append(template);
+    }
+
+    function removeNewItemRow(button) {
+        $(button).closest("tr").remove();
+        updateMultiOrderTotal();
+
+        if ($("#multiOrderItemsBody tr").length === 0) {
+            $("#confirmItemsButton").hide();
+        }
+    }
+
+    function updateUnitPrice(select) {
+        const unitPrice = $(select).find("option:selected").data("price");
+        const row = $(select).closest("tr");
+        row.find(".unit-price").val(unitPrice);
+        updateLineTotal(row.find(".quantity"));
+    }
+
+    function updateLineTotal(quantityInput) {
+        const row = $(quantityInput).closest("tr");
+        const unitPrice = parseFloat(row.find(".unit-price").val()) || 0;
+        const quantity = parseInt($(quantityInput).val()) || 0;
+        const lineTotal = unitPrice * quantity;
+        row.find(".line-total").val(lineTotal.toFixed(2));
+        updateMultiOrderTotal();
+    }
+
+    function updateMultiOrderTotal() {
+        let total = 0;
+        $("#multiOrderItemsBody .line-total").each(function() {
+            total += parseFloat($(this).val()) || 0;
+        });
+        $("#orderTotal").text(total.toFixed(2));
+
+        if ($("#multiOrderItemsBody tr").length > 0) {
+            $("#confirmItemsButton").show();
+        }
+    }
+
+    function confirmItemsToOrder() {
+
+        let allFieldsValid = true
+
+        $("#multiOrderItemsBody tr").each(function() {
+            const service = $(this).find(".service").val();
+            const itemType = $(this).find(".item-type").val();
+            const characteristic = $(this).find(".item-characteristic").val();
+            
+            // Check if any dropdown is empty
+            if (!service || !itemType || !characteristic) {
+                allFieldsValid = false;  // Mark as invalid if any dropdown is empty
+                alert("Veuillez sélectionner le Service, Type de Vêtement et Caractéristique pour chaque article.");  // Display an alert
+                return false;  // Exit each loop early if any field is empty
+            }
+        });
+
+        // If any field is invalid, exit the function early
+        if (!allFieldsValid) return;
+        $("#multiOrderItemsBody tr").each(function() {
+            const itemTypeText = $(this).find(".item-type option:selected").text().trim();  // Get the selected text for item type
+            const itemTypeID  = $(this).find(".item-type option:selected").val()
+            const characteristicText = $(this).find(".item-characteristic option:selected").text().trim();  // Get the selected text for characteristic
+            const characID = $(this).find(".item-characteristic option:selected").val()
+            const serviceText = $(this).find(".service option:selected").text().trim();  // Get the selected text for characteristic
+            const serviceID = $(this).find(".service option:selected").val()
+            const unitPrice = parseFloat($(this).find(".unit-price").val()) || 0;
+            const quantity = parseInt($(this).find(".quantity").val()) || 1;
+            const lineTotal = (unitPrice * quantity).toFixed(2);
+            const dsc = $(this).find(".description").val()
+
+            let existingRow = null;
+            $("#orderItemsBody tr").each(function() {
+                const existingItemTypeText = $(this).find(".item-type-text").text().trim().toLowerCase();
+                const existingCharacteristicText = $(this).find(".characteristic-text").text().trim().toLowerCase();
+                const existServiceText = $(this).find(".service-text").text().trim().toLowerCase();
+                
+                if (existingItemTypeText === itemTypeText.toLowerCase() && existingCharacteristicText === characteristicText.toLowerCase() &&  existServiceText === serviceText.toLowerCase()) {
+                    existingRow = $(this);
+                    return false;  // Exit loop if match is found
+                }
+            });
+
+            
+            if (existingRow) {
+                // Update quantity and line total if item already exists
+                const existingQuantity = parseInt(existingRow.find(".quantity-text").text()) || 0;
+                const newQuantity = existingQuantity + quantity;
+                existingRow.find(".quantity-text").text(newQuantity);
+                existingRow.find(".line-total-text").text((newQuantity * unitPrice).toFixed(2));
+            } else {
+                // Append a new row with static text values
+                const newRow = `
+                    <tr>
+                        <td class="item-type-text" item-id="${itemTypeID}">${itemTypeText}</td>
+                        <td class="characteristic-text"  item-id="${characID}">${characteristicText}</td>
+                        <td class="service-text"  item-id="${serviceID}">${serviceText} </td>
+                        <td class="desc-text" >${dsc} </td>
+                        <td class="unit-price-text">${unitPrice.toFixed(2)} Fcfa</td>
+                        <td class="quantity-text">${quantity}</td>
+                        <td class="line-total-text">${lineTotal} Fcfa</td>
+                        <td><button type="button" class="btn btn-danger" onclick="removeConfirmedItem(this)">Supprimer</button></td>
+                    </tr>`;
+                $("#orderItemsBody").append(newRow);
+            }
+                
+        });
+        clearAddOrderItemsSection();
+        updateOrderTotal();
+        toggleConfirmedArticlesSection();
+        toggleConfirmOrderButton();
+        toggleAddOrderItemsSection()
+    }
+
+    function toggleConfirmedArticlesSection() {
+        const confirmedSection = document.getElementById("confirmedArticlesSection");
+        if ($("#orderItemsBody tr").length > 0) {
+            confirmedSection.style.display = "block";  // Show the confirmed articles section
+        } else {
+            confirmedSection.style.display = "none";  // Hide if there are no confirmed articles
+        }
+    }
+
+    function removeConfirmedItem(button) {
+        $(button).closest("tr").remove();
+        updateOrderTotal();
+        toggleConfirmedArticlesSection();
+        toggleConfirmOrderButton();
+    }
+
+    function updateOrderTotal() {
+    let total = 0;
+
+    // Loop through each line total in the #orderItemsBody
+    $("#orderItemsBody .line-total-text").each(function() {
+        // Parse the text as a float, removing "Fcfa" if it's included
+        const lineTotal = parseFloat($(this).text().replace("Fcfa", "").trim());
+
+        // Check if lineTotal is a valid number
+        if (!isNaN(lineTotal)) {
+            total += lineTotal;  // Add to the total
+        } else {
+            console.warn("Invalid line total:", $(this).text());
+        }
+    });
+
+    // Log the calculated total for debugging
+    console.log("Calculated Order Total:", total);
+
+    // Update the order total display in the HTML
+    $("#orderTotal").text(total.toFixed(2) + " Fcfa");
+}
+
+    function toggleConfirmOrderButton() {
+        if ($("#orderItemsBody tr").length > 0) {
+            $("#confirmOrderButton").show();
+        } else {
+            $("#confirmOrderButton").hide();
+        }
+    }
+
+    function applyDiscount() {
+        const orderTotal = parseFloat($('#orderTotal').text()) || 0;
+        const discount = parseFloat($('#ristourne').val()) || 0;
+        
+        if (discount >= orderTotal){
+            alert("Impossible d'appliquer cette remise !")
+            $('#discountedTotal').text("00.00");
+            $('#ristourne').val('')
+            return false;
+        }else{
+
+            // Calculate discounted total
+            const discountAmount = (orderTotal * discount) / 100;
+            const discountedTotal = orderTotal - discount;
+            
+            $('#discountedTotal').text(discountedTotal.toFixed(2));  // Display discounted total
+        }
+        
+    }
+
+    
+</script>
+{% endblock %}

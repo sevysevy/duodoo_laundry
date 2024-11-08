@@ -1,0 +1,127 @@
+<!-- templates/receipt_print.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Receipt - Commande #{{ order.id }}</title>
+    <style>
+        /* Simple styling for better print format */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 80mm;
+            font-size: 13px;
+        }
+        h3, p {
+            text-align: center;
+            margin: 5px 0;
+        }
+        hr {
+            width: 90%;
+            margin: 10px auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 5px;
+            text-align: left;
+        }
+        th {
+            background-color: #eee;
+            border-bottom: 1px solid #ddd;
+        }
+        td {
+            border-bottom: 1px solid #ddd;
+        }
+        .totals {
+            text-align: right;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+        .thank-you {
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .logo-div{
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .logo {
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-div">
+        <img class="logo" src="{% static 'images/logo.jpg' %}" />
+    </div>
+    
+    <p>Adresse: Obam</p>
+    <p>Téléphone: +237 656 431 945</p>
+    <hr>
+    <h3>Commande N{{ order.id }}</h3>
+    <p>Date: {{ order.created_at|date:"d/m/Y" }}</p>
+    <p>Client: {{ order.client.fullName }}</p>
+
+    <hr>
+
+    <!-- Order Items Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Vêtement</th>
+                <th>Service</th>
+                <th>PU (Fcfa)</th>
+                <th>Quantité</th>
+                <th>Total (Fcfa)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.line_items.all %}
+                <tr>
+                    <td>{{ item.item_type.name }}</td>
+                    <td>{{ item.service.name }}</td>
+                    <td>{{ item.base_price }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.line_total }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- Summary Totals -->
+    <table>
+        <tr>
+            <td colspan="4" class="totals">Total:</td>
+            <td class="totals">{{ order.total }} Fcfa</td>
+        </tr>
+        <tr>
+            <td colspan="4" class="totals">Montant Payé:</td>
+            <td class="totals">{{ order.amount_paid }} Fcfa</td>
+        </tr>
+        <tr>
+            <td colspan="4" class="totals">Reste à Payer:</td>
+            <td class="totals">{{ order.balance }} Fcfa</td>
+        </tr>
+        
+    </table>
+
+    <div class="footer">
+        <p class="thank-you">Merci d'avoir choisi Crystal Pressing!</p>
+        <p>À bientôt!</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - Systeme de gestion de pressing{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <h2>Bienvenue sur le Systeme de gestion de pressing</h2>
+    <p>Veuillez choisir une option pour commencer :</p>
+    <div class="options">
+        <a href="{% url 'order_list' %}" class="option-card">
+            <img src="{% static 'images/reception.jpg' %}" alt="Reception" class="option-image">
+            <h3>Reception</h3>
+            <p>Gerer les nouvelles commandes des clients.</p>
+        </a>
+        <a href="{% url 'batch_list' %}" class="option-card">
+            <img src="{% static 'images/production.jpg' %}" alt="Production" class="option-image">
+            <h3>Production</h3>
+            <p>Suivez et mettez a jours le statut des differentes commandes.</p>
+        </a>
+        <a href="" class="option-card">
+            <img src="{% static 'images/delivery.jpg' %}" alt="Livraison" class="option-image">
+            <h3>Livraison</h3>
+            <p>Suivez les differentes livraisons des commandes clients.</p>
+        </a>
+        <a href="" class="option-card">
+            <img src="{% static 'images/finance.jpg' %}" alt="Livraison" class="option-image">
+            <h3>Finance</h3>
+            <p>Gerez vos finances.</p>
+        </a>
+        <a href="" class="option-card">
+            <img src="{% static 'images/rapport.jpg' %}" alt="Livraison" class="option-image">
+            <h3>Rapports</h3>
+            <p>Suivez l'evolution de votre activite.</p>
+        </a>
+        <a href="" class="option-card">
+            <img src="{% static 'images/admin.jpg' %}" alt="Livraison" class="option-image">
+            <h3>Administration</h3>
+            <p>Suivez les differentes livraisons des commandes clients.</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

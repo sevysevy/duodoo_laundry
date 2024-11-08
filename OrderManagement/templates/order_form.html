@@ -1,0 +1,655 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Prise de Commande{% endblock %}
+
+{% block content %}
+
+<h2>Prise de Commande</h2>
+
+<form id="orderForm" method="post">
+    {% csrf_token %}
+    
+    <!-- Client Information Section -->
+     
+    <div class="d-flex justify-content-between mb-3">
+        <button type="button"  id="saveOrderButton" class="btn  btn-primary "  onclick="validateAndsimpleSubmitOrder()">
+            <i class="fas fa-save me-2"></i> Enregistrer simplement
+        </a>
+
+        <button type="button" id="confirmOrderButton" class="btn register-btn px-5 py-2 shadow-lg" onclick="validateAndSubmitOrder()">
+            <i class="fas fa-check-circle me-2"></i> Confimer la Commande
+        </button>
+    </div>
+
+    <div id="errorMessage" class="text-danger mt-2" style="display: none;"></div>
+
+    <div class="card mb-4 shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Informations du Client</h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <label for="client" class="form-label fw-bold">Client</label>
+                    <div class="input-group">
+                        <!-- Client dropdown using Select2 for searchability -->
+                        <select id="client" name="client" class="form-select" required>
+                            <option value="">Sélectionner un Client</option>
+                        </select>
+                        <button type="button" class="btn btn-primary ms-2" onclick="openAddClientModal()">
+                            <i class="fas fa-user-plus"></i> Nouveau Client
+                        </button>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <label for="date-delivery" class="form-label fw-bold">Date de récupération prévue</label>
+                    <input type="date" name="date-delivery-expected" class="form-control" id="delivery-date"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
+    <div class="card mb-4" id="confirmedArticlesSection">
+        <div class="card-body">
+            <h5 class="card-title">Articles de la Commande</h5>
+            <table class="table" id="orderItemsTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Type de Vêtement</th>
+                        <th>Caractéristique</th>
+                        <th>Service</th>
+                        <th>Couleur</th>
+                        <th>Marque</th>
+                        <th>Anormalie</th>
+                        <th>Remarque</th>
+                        <th>Prix Unitaire</th>
+                        <th>Quantité</th>
+                        <th>Total Ligne</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="orderItemsBody">
+                    <!-- Order items will appear here -->
+                </tbody>
+            </table>
+    
+            <button type="button" class="btn btn-primary mb-3" onclick="addNewItemRow()">Ajouter un Article</button>
+    
+            <!-- Payment Details Row -->
+           
+    
+            <!-- Order Total -->
+            <div class="d-flex flex-column align-items-end mt-4">
+                <div class="total-commande-box mb-3">
+                    <i class="fas fa-coins me-2"></i> Total Commande: <span id="orderTotal">0.00</span>
+                </div>
+            
+                <div class="row mb-3">
+                    <!-- Payment Method -->
+                    <div class="col-md-6">
+                        <label for="paymentMethod" class="form-label fw-bold">Méthode de Paiement</label>
+                        <select id="paymentMethod" name="paymentMethod" class="form-select" required>
+                            <option value="">Sélectionner la Méthode</option>
+                            <option value="cash">Espèces</option>
+                            <option value="mobile">Mobile Money</option>
+                            <!-- Add more payment options as needed -->
+                        </select>
+                    </div>
+                
+                    <!-- Initial Payment Amount -->
+                    <div class="col-md-6">
+                        <label for="initialPayment" class="form-label fw-bold">Montant du Paiement</label>
+                        <div class="input-group">
+                            <span class="input-group-text">Fcfa</span>
+                            <input type="number" id="initialPayment" name="initialPayment" class="form-control" min="0" placeholder="Entrez le montant">
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+
+
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between mb-3">
+        <button type="button"  id="saveOrderButton" class="btn  btn-primary "  onclick="validateAndsimpleSubmitOrder()">
+            <i class="fas fa-save me-2"></i> Enregistrer simplement
+        </a>
+
+        <button type="button" id="confirmOrderButton" class="btn register-btn px-5 py-2 shadow-lg" onclick="validateAndSubmitOrder()">
+            <i class="fas fa-check-circle me-2"></i> Confimer la Commande
+        </button>
+    </div>
+    
+
+</form>
+
+<div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="addClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addClientModalLabel">Ajouter un Nouveau Client</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addClientForm">
+                    {% csrf_token %}
+
+                    <!-- Title and First Name on the Same Line -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="title" class="form-label">Titre</label>
+                            <select id="title" name="title" class="form-control" required>
+                                <option value="">Sélectionner un Titre</option>
+                                <option value="Mr">Mr</option>
+                                <option value="Mme">Mme</option>
+                                <option value="Mlle">Mlle</option>
+                                <option value="Entreprise">Entreprise</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label for="firstName" class="form-label">Prénom</label>
+                            <input type="text" id="firstName" name="firstName" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <!-- Last Name Field -->
+                    <div class="mb-3">
+                        <label for="lastName" class="form-label">Nom</label>
+                        <input type="text" id="lastName" name="lastName" class="form-control" required>
+                    </div>
+
+                    <!-- Phone Field -->
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Téléphone</label>
+                        <input type="text" id="phone" name="phone" class="form-control" required>
+                    </div>
+
+                    <!-- Ville and Quartier on the Same Line -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="ville" class="form-label">Ville</label>
+                            <input type="text" id="ville" name="ville" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="quartier" class="form-label">Quartier</label>
+                            <input type="text" id="quartier" name="quartier" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="button" class="btn btn-primary" onclick="submitNewClient()">Ajouter Client</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Warning Modal -->
+<div class="modal fade" id="warningModal" tabindex="-1" aria-labelledby="warningModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="warningModalLabel"><i class="fas fa-exclamation-triangle me-2"></i> Attention</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir continuer ? Voulez vous confirmer cette commande sans paiement ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="proceedButton">Continuer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Hidden Template for New Item Row -->
+<script id="orderItemTemplate" type="text/template">
+    <tr>
+        <td>
+            <select name="item_type" class="form-control item-type">
+                <option value="">Choisir</option>
+                {% for category in categories %}
+                    <optgroup label="{{ category.name }}">
+                        {% for item_type in category.item_types.all %}
+                            <option value="{{ item_type.id }}">{{ item_type.name }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <select class="item-characteristic form-control">
+                <option value="">Choisir</option>
+            </select>
+        </td>
+        <td>
+            <select class="service form-control">
+                <option value="">Choisir</option>
+            </select>
+        </td>
+        <td><input type="text" class="form-control color" ></td>
+        <td><input type="text" class="form-control brand" ></td>
+        <td>
+            <select name="anormalie" class="form-control anormalie">
+                <option value="">Choisir</option>
+                {% for anor in anormalies %}
+                    
+                    <option value="{{ anor.0 }}">{{ anor.1 }}</option>
+                      
+                {% endfor %}
+            </select>
+
+        </td>
+        
+        <td>
+            <textarea class="description form-control"></textarea>
+        </td>
+        <td><input type="text" class="form-control unit-price" readonly></td>
+        <td><input type="number" class="form-control quantity" value="1" min="1" onchange="updateLineTotal(this)"></td>
+        <td><input type="text" class="form-control line-total" readonly></td>
+        <td><button type="button" class="btn btn-danger" onclick="removeNewItemRow(this)">Supprimer</button></td>
+    </tr>
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 for the client dropdown
+        $('#client').select2({
+            placeholder: "Sélectionner un Client",
+            allowClear: true
+        });
+
+        fetchClients();
+        
+        // Initialize order total calculation
+        updateOrderTotal();
+
+        $(document).on("change", ".item-type, .item-characteristic , .service", function(){
+            fetchPrice()
+            
+        });
+
+        $(document).on("change", ".item-type", function() {
+            const row = $(this).closest('tr');  // Find the closest row for scoped manipulation
+            const itemTypeId = $(this).val();
+            const characteristicSelect = row.find('.item-characteristic');  // Target the characteristic dropdown in the same row
+            characteristicSelect.html('').append($('<option>', {
+                                    value: "",
+                                    text: "Choisir"
+                                }))
+            // Clear previous options in the Caractéristiques dropdown
+
+            // Fetch the characteristics based on the selected item type
+            if (itemTypeId) {
+                $.ajax({
+                    url: "{% url 'get_characteristics_for_item_type' %}",
+                    data: { 'item_type_id': itemTypeId },
+                    success: function(data) {
+                        // Populate the Caractéristiques dropdown with the fetched options
+                        data.forEach(function(characteristic) {
+                            characteristicSelect.append(
+                                $('<option>', {
+                                    value: characteristic.id,
+                                    text: characteristic.name
+                                })
+                            );
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching characteristics:", error);
+                    }
+                });
+            }
+        });
+
+        $(document).on("change", ".item-characteristic", function() {
+            const row = $(this).closest('tr');  // Find the closest row for scoped manipulation
+            const characId = $(this).val();
+            const characteristicSelect = row.find('.item-characteristic');  // Target the characteristic dropdown in the same row
+            const serviceSelect = row.find('.service');
+
+            serviceSelect.html('').append($('<option>', {
+                                    value: "",
+                                    text: "Choisir"
+                                }))
+
+            // Clear previous options in the Caractéristiques dropdown
+
+            // Fetch the characteristics based on the selected item type
+            if (characId) {
+                
+                $.ajax({
+                    url: "{% url 'get_sevice_for_item_type' %}",
+                    data: { 'charac_id': characId },
+                    success: function(data) {
+                        // Populate the Caractéristiques dropdown with the fetched options
+                        data.forEach(function(characteristic) {
+                            serviceSelect.append(
+                                $('<option>', {
+                                    value: characteristic.id,
+                                    text: characteristic.name
+                                })
+                            );
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching characteristics:", error);
+                    }
+                });
+            }
+        });
+
+
+        
+
+        // Action to perform when the proceed button is clicked
+        $('#proceedButton').on('click', function() {
+            // Your action logic here
+            validateAndsimpleSubmitOrder(true , true)
+            
+            // Close the modal after action (optional)
+            $('#warningModal').modal('hide');
+        });
+
+
+    });
+
+
+    function validateAndsimpleSubmitOrder(confirm , bypass){
+        const client = $('#client').val();
+        const orderItems = $('#orderItemsBody tr'); // Get all item rows
+        const errorMessage = $('#errorMessage');
+        const initialPayment = parseFloat($('#initialPayment').val()) || 0; // Get initial payment amount
+        const paymentMethod = $('#paymentMethod').val();
+        const delivery_date = $("#delivery-date").val()
+
+        // Clear previous error message
+        errorMessage.hide().text('');
+    
+        // Check if client is selected
+        if (!client) {
+        alert('Veuillez sélectionner un client pour enregistrer la commande.')
+            errorMessage.html('<span class="alert alert-error">'+
+            'Veuillez sélectionner un client pour enregistrer la commande.'+
+                                '</span>').show();
+            return;
+        }
+
+        // Check if there's at least one item in the order
+        if (orderItems.length === 0) {
+            alert('Veuillez ajouter au moins un article pour enregistrer la commande.')
+            errorMessage.text("Veuillez ajouter au moins un article pour enregistrer la commande.").show();
+            return;
+        }
+
+        
+
+        let allFieldsFilled = true;
+        let itemsData = [];
+
+        var i=0
+        orderItems.each(function() {
+            const itemType = $(this).find('.item-type').val();
+            const characteristic = $(this).find('.item-characteristic').val();
+            const service = $(this).find('.service').val();
+            const unitPrice = $(this).find('.unit-price').val();
+            const quantity = $(this).find('.quantity').val();
+            const description = $(this).find('.description').val();
+            const color = $(this).find('.color').val();
+            const brand = $(this).find('.brand').val();
+            const anormalie = $(this).find('.anormalie').val();
+
+            // Check if any required field is empty
+            if (!itemType || !characteristic || !service || !unitPrice || !quantity) {
+                allFieldsFilled = false;
+                return false; // Break out of each loop if any field is empty
+            }
+
+            itemsData.push({
+                item_type: itemType,
+                characteristic: characteristic,
+                service: service,
+                unit_price: parseFloat(unitPrice),
+                quantity: parseInt(quantity),
+                description: description,
+                color: color,
+                brand: brand,
+                anormalie: anormalie
+            });
+            i++
+        });
+
+        if (!allFieldsFilled) {
+            alert("Tous les champs des articles de commande sont obligatoires, sauf la description.")
+            errorMessage.text("Tous les champs des articles de commande sont obligatoires, sauf la description.").show();
+            return;
+        }
+
+
+        const orderData = {
+            client: client,
+            items: itemsData,
+            initial_payment: initialPayment,
+            payment_method: paymentMethod,
+            csrfmiddlewaretoken: '{{ csrf_token }}'  ,// Add CSRF token for security,
+            delivery_date: delivery_date,
+            count: i
+        };
+
+        if (confirm != undefined && confirm != null && confirm != ""){
+            if (bypass != undefined && bypass != null && bypass != ""){
+
+            }
+
+            else if (!paymentMethod) {
+                $('#warningModal').modal('show');
+                errorMessage.text("Veuillez sélectionner une méthode de paiement.").show();
+                return;
+            }
+            orderData['confirm'] = confirm
+        }
+
+        // If both checks pass, submit the form
+        $.ajax({
+            url: "{% url 'order_create' %}",  // Replace with the actual URL or URL name for your view
+            type: "POST",
+            data: orderData ,
+            success: function(response) {
+                if(confirm){
+                    printReceipt(response.receipt).then(()=>{
+                        window.location.href = "{% url 'order_list' %}"}
+                    )
+                }
+
+                window.location.href = "{% url 'order_list' %}"
+                
+                    //alert("Commande enregistrée avec succès !");
+
+                    //setTimeout(function(){window.location.href = "{% url 'order_list' %}";} , 5000)
+                    // Redirect if provided
+
+                
+            },
+            error: function(xhr, status, error) {
+                errorMessage.text("Erreur de soumission de la commande. Veuillez réessayer.").show();
+                console.error("Error:", error);
+            }
+        });
+    
+    
+    }
+
+
+    function validateAndSubmitOrder() {
+        var confirm = true
+        validateAndsimpleSubmitOrder(confirm)
+    }
+
+
+function submitNewClient() {
+        const formData = {
+            'title': $('#title').val(),
+            'firstName': $('#firstName').val(),
+            'lastName': $('#lastName').val(),
+            'phone': $('#phone').val(),
+            'ville': $('#ville').val(),
+            'quartier': $('#quartier').val(),
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        };
+
+        $.ajax({
+            url: "{% url 'add_client' %}",  // URL for your add client view
+            type: "POST",
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    // Close the modal and reset the form
+                    $('#addClientModal').modal('hide');
+                    $('#addClientForm')[0].reset();
+                    location.reload();
+                    
+                    // Optionally, refresh the client dropdown here if needed
+                } else {
+                    alert("Erreur lors de l'ajout du client.");
+                }
+            },
+            error: function(xhr, status, error) {
+                alert("Une erreur s'est produite. Veuillez réessayer.");
+            }
+        });
+    }
+
+    function openAddClientModal() {
+        $('#addClientModal').modal('show');
+    }
+
+    function printReceipt(url) {
+        return new Promise((resolve, reject) => {
+            // Your printing logic here
+            try {
+                const windowFeatures = "width=80,height=297,resizable=no,scrollbars=yes";
+                    const printWindow = window.open(url, windowFeatures, '_blank');
+                    printWindow.onload = function() {
+                        
+                        printWindow.print();
+                        printWindow.close();
+                        
+                        
+                    };
+                resolve(); // Resolve the promise if successful
+            } catch (error) {
+                reject(error); // Reject the promise if there's an error
+            }
+        });
+    }
+
+
+
+    function fetchPrice() {
+        $('#orderItemsBody tr').each(function() {
+            // 'this' refers to the current row in the loop
+            const row = $(this);
+
+            const itemTypeId = row.find('.item-type').val();
+            const characteristicId = row.find('.item-characteristic').val();
+            const basePriceField = row.find('.unit-price'); 
+            const service = row.find('.service').val()
+            
+            if (itemTypeId && characteristicId && service) {
+            $.ajax({
+                url: "{% url 'get_price' %}",
+                data: {
+                    'item_type_id': itemTypeId,
+                    'characteristic_id': characteristicId,
+                    'service_id': service
+                },
+                success: function(data) {
+                    if (data.price !== null) {
+                        basePriceField.val(data.price);  // Set the price in the base price input
+                    } else {
+                        basePriceField.val("N/A");  // Handle case where no price is found
+                    }
+                    updateLineTotal(row.find('.quantity'))
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching price:", error);
+                    basePriceField.val("Error");  // Indicate error in fetching
+                }
+            });
+        } else {
+            basePriceField.val("");  // Clear base price if selection is incomplete
+        }
+        });
+         // Base price input in the same row
+
+
+        
+    }
+
+    // Adds a new item row directly to confirmed order items section
+    function addNewItemRow() {
+        const template = $("#orderItemTemplate").html();
+        $("#orderItemsBody").append(template);
+    }
+
+    
+
+    // Update line total based on quantity and unit price
+    function updateLineTotal(quantityInput) {
+        const row = $(quantityInput).closest("tr");
+        const unitPrice = parseFloat(row.find(".unit-price").val()) || 0;
+        const quantity = parseInt($(quantityInput).val()) || 1;
+        const lineTotal = unitPrice * quantity;
+        row.find(".line-total").val(lineTotal.toFixed(2));
+        updateOrderTotal();
+    }
+
+    // Remove item row
+    function removeNewItemRow(button) {
+        $(button).closest("tr").remove();
+        updateOrderTotal();
+    }
+
+    // Update total order amount
+    function updateOrderTotal() {
+        let total = 0;
+        $("#orderItemsBody .line-total").each(function() {
+            total += parseFloat($(this).val()) || 0;
+        });
+        $("#orderTotal").text(total.toFixed(2) + " Fcfa");
+    }
+
+    // Fetch clients for the dropdown
+    function fetchClients() {
+        $.ajax({
+            url: "{% url 'get_customers' %}",
+            type: "GET",
+            success: function(data) {
+                const clientSelect = $("#client");
+                clientSelect.empty();
+                clientSelect.append('<option value="">Sélectionner un Client</option>');
+                data.forEach(function(client) {
+                    clientSelect.append(new Option(client.name, client.id));
+                });
+                clientSelect.select2({
+                    placeholder: "Sélectionner un Client",
+                    allowClear: true
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error("Erreur lors de la récupération des clients:", error);
+            }
+        });
+    }
+
+
+</script>
+{% endblock %}

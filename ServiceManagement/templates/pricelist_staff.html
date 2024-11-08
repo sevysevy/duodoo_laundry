@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Liste des Prix{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Liste des Prix pour le Personnel</h2>
+
+    <!-- Filter Options -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Filtrer les Prix</h5>
+            <form method="get" class="row g-3">
+                <!-- Service Filter -->
+                <div class="col-md-3">
+                    <label for="service" class="form-label">Service</label>
+                    <select id="service" name="service" class="form-select">
+                        <option value="">Tous les Services</option>
+                        {% for service in services %}
+                            <option value="{{ service.id }}" {% if request.GET.service == service.id|stringformat:"s" %}selected{% endif %}>{{ service.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="col-md-3">
+                    <label for="category" class="form-label">Catégorie</label>
+                    <select id="category" name="category" class="form-select">
+                        <option value="">Toutes les Catégories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Item Type Filter -->
+                <div class="col-md-3">
+                    <label for="item_type" class="form-label">Type de Vêtement</label>
+                    <select id="item_type" name="item_type" class="form-select">
+                        <option value="">Tous les Types</option>
+                        {% for item_type in item_types %}
+                            <option value="{{ item_type.id }}" {% if request.GET.item_type == item_type.id|stringformat:"s" %}selected{% endif %}>{{ item_type.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Submit Filter Button -->
+                <div class="col-md-3 align-self-end">
+                    <button type="submit" class="btn btn-primary">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Price List Table -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Service</th>
+                    <th>Catégorie</th>
+                    <th>Type de Vêtement</th>
+                    <th>Caractéristique</th>
+                    <th>Prix</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in pricelist %}
+                <tr>
+                    <td>{{ entry.service.name }}</td>
+                    <td>{{ entry.item_type.category.name }}</td>
+                    <td>{{ entry.item_type.name }}</td>
+                    <td>{{ entry.item_characteristic.name }}</td>
+                    <td>{{ entry.price }}</td>
+                    <td>
+                        {% if entry.active %}
+                            <span class="badge bg-success">Actif</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactif</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">Aucune entrée de prix trouvée.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const categorySelect = document.getElementById("category");
+        const itemTypeSelect = document.getElementById("item_type");
+
+        categorySelect.addEventListener("change", function() {
+            const categoryId = this.value;
+
+            // Reset item type options
+            itemTypeSelect.innerHTML = '<option value="">Tous les Types</option>';
+
+            if (categoryId) {
+                fetch(`/get_item_types_by_category/${categoryId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.item_types.forEach(itemType => {
+                            const option = document.createElement("option");
+                            option.value = itemType.id;
+                            option.textContent = itemType.name;
+                            itemTypeSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error("Erreur lors de la récupération des types de vêtements:", error));
+            }
+        });
+    });
+</script>
+{% endblock %}

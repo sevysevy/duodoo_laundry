@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Supprimer la Dépense{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Supprimer la Dépense</h2>
+    <p>Êtes-vous sûr de vouloir supprimer la dépense <strong>{{ expense.description }}</strong> de <strong>{{ expense.amount }}</strong> ?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Supprimer</button>
+        <a href="{% url 'expense_list' %}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

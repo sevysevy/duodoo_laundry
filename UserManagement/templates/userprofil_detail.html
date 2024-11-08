@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Détails du profil utilisateur{% endblock %}
+{% block header %}Détails du profil utilisateur{% endblock %}
+
+{% block content %}
+<h2>Détails du profil utilisateur</h2>
+
+<p><strong>Nom complet:</strong> {{ profile.fullName }}</p>
+<p><strong>Email:</strong> {{ profile.email }}</p>
+<p><strong>Téléphone:</strong> {{ profile.phone }}</p>
+<p><strong>Rôle:</strong> {{ profile.role.name }}</p>
+<p><strong>Statut:</strong>  Compte {% if profile.active %} actif {% else %}  désactivé {% endif %} </p>
+<img src="{% if profile.profilImage %} {{ profile.profilImage.url }} {% endif %}" alt="Profil image" style="max-width: 100px;">
+
+<div style="margin-top: 20px;">
+    <a href="{% url 'userprofile_update' profile.pk %}" class="btn btn-secondary"><i class="fas fa-edit"></i> Modifier</a>
+    <a href="{% url 'userprofile_delete' profile.pk %}" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Supprimer</a>
+</div>
+{% endblock %}

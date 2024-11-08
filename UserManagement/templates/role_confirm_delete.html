@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Supprimer un rôle{% endblock %}
+{% block header %}Supprimer un rôle{% endblock %}
+
+{% block content %}
+<h2>Êtes-vous sûr de vouloir supprimer ce rôle ?</h2>
+<p><strong>{{ role.name }}</strong></p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">
+        <i class="fas fa-trash-alt"></i> Supprimer
+    </button>
+    <a href="{% url 'role_list' %}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ form.instance.pk|yesno:"Modifier,Créer" }} {% if form.instance.pk %}Type d'Article{% else %}Caractéristique d'Article{% endif %}{% endblock %}
+{% block header %}{{ form.instance.pk|yesno:"Modifier,Créer" }} {% if form.instance.pk %}Type d'Article{% else %}Caractéristique d'Article{% endif %}{% endblock %}
+
+{% block content %}
+<h2>{{ form.instance.pk|yesno:"Modifier,Créer" }} {% if form.instance.pk %}Type d'Article{% else %}Caractéristique d'Article{% endif %}</h2>
+
+<div class="form-container">
+    <form method="post" class="styled-form">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
+        <a href="{% if form.instance.pk %}{% url 'itemtype_list' %}{% else %}{% url 'itemcharacteristic_list' %}{% endif %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuler</a>
+    </form>
+</div>
+{% endblock %}

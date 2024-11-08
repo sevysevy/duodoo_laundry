@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Role Management{% endblock %}
+{% block header %}Role List{% endblock %}
+
+{% block content %}
+<h2>Roles</h2>
+
+<div style="text-align: right; margin-bottom: 10px;">
+    <a href="{% url 'role_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i>Créer un rôle
+    </a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for role in roles %}
+        <tr>
+            <td>{{ role.name }}</td>
+            <td>{{ role.desc_role }}</td>
+            <td class="table-actions">
+                <a href="{% url 'role_detail' role.pk %}" class="btn btn-info">
+                    <i class="fas fa-eye"></i> Voir
+                </a>
+                <a href="{% url 'role_update' role.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+                <a href="{% url 'role_delete' role.pk %}" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Supprimer
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Supprimer l'Entrée de Liste de Prix{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Confirmer la Suppression</h2>
+    <p>Voulez-vous vraiment supprimer l'entrée de prix suivante ?</p>
+    <p><strong>{{ pricelist_entry }}</strong></p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Oui, supprimer</button>
+        <a href="{% url 'pricelist_list' %}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

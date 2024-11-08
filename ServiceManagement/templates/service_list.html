@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des services{% endblock %}
+{% block header %}Liste des services{% endblock %}
+
+{% block content %}
+<h2>Services</h2>
+
+<div style="text-align: right; margin-bottom: 10px;">
+    <a href="{% url 'service_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Ajouter un service
+    </a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for service in services %}
+        <tr>
+            <td>{{ service.name }}</td>
+            <td>{{ service.description }}</td>
+            <td>
+                <a href="{% url 'service_update' service.pk %}" class="btn btn-secondary"><i class="fas fa-edit"></i> Modifier</a>
+                <a href="{% url 'service_delete' service.pk %}" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Supprimer</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Détails de la Commande{% endblock %}
+
+{% block content %}
+
+    <h2 class="mb-4">Détails de la Commande</h2>
+
+    <!-- Order Information Card -->
+    {% if order.status != 'draft' %}
+        {% if order.payment_status != 'complete' %}
+            <a href="{% url 'register_payment' order.id %}" class="btn btn-success mb-2">
+                <i class="fas fa-money-bill-wave"></i> Enregistrer un payment
+            </a>
+        {% endif %}
+
+        <button class="btn btn-sm btn-secondary mb-2" onclick="printReceipt('{{order.receipt_url}}')">
+            <i class="fas fa-print"></i> Imprimer la facture
+        </button>
+
+        {% if order.get_pending_items %}
+            <button class="btn btn-sm btn-primary mb-2" onclick="openBatchCreateForm()">
+                <i class="fas fa-shirt"></i> Creer un lot de production
+            </button>
+        {% endif %}
+    {% endif %}
+
+    {% if order.status == 'complete' %}
+        <button type="button" id="markAsDeliveredButton" class="btn btn-primary mb-2"  onclick="openDeliveringForm()">Livrer des Vêtements</button>
+    {% endif %}
+
+    
+    
+    {% if order.status == 'draft' %}
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{% url 'order_update' order.id %}" class="btn btn-primary mb-2">
+            <i class="fas fa-pencil"></i> Modifier la facture
+        </a>
+
+        <a href="{% url 'order_update' order.id %}" class="btn register-btn mb-2">
+            <i class="fas fa-check-circle me-2"></i>  Confirmer la facture
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="card mb-4 shadow-sm border-0">
+       
+            <div class="ribbon">
+                
+                    {% if order.payment_status == 'pending' %}
+                        Paiement En attente
+                    {% elif order.payment_status == 'partial' %}
+                        Paiement partiel
+                    {% elif order.payment_status == 'complete' %}
+                        Paiement Complet
+                    {% endif %}
+            </div>
+         
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Informations sur la Commande</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <h6 class="fw-bold">Numéro de Commande:</h6>
+                    <p>{{ order.id }}</p>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold">Date de Commande:</h6>
+                    <p>{{ order.created_at|date:"d/m/Y" }}</p>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold">Statut:</h6>
+                    <p>
+                    {% if order.status == 'pending' %}
+                        <span class="badge bg-warning">En attente</span>
+                    {% elif order.status == 'production' %}
+                        <span class="badge bg-info">En production</span>
+                    {% elif order.status == 'complete' %}
+                        <span class="badge bg-success">Prete pour la livraison</span>
+                    {% elif order.status == 'delivered' %}
+                        <span class="badge bg-primary">Livrée</span>
+                    {% elif order.status == 'partial_production' %}
+                        <span class="badge bg-primary">Production partielle</span>
+                    {% elif order.status == 'draft' %}
+                        <span class="badge bg-secondary">Brouillon</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inconnu</span>
+                    {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="fw-bold">Client:</h6>
+                    <p>{{ order.client.fullName }} <br> {{ order.client.phone }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="fw-bold">Remise:</h6>
+                    <p>{{ order.ristourne }} %</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <h6 class="fw-bold">Montant total:</h6>
+                    <p><strong>{{ order.total }} Fcfa</strong></p>
+                </div>
+                <div class="col-sm-4">
+                    <h6 class="fw-bold">Montant payé:</h6>
+                    <p><strong>{{ order.amount_paid }} Fcfa</strong></p>
+
+                </div>
+                <div class="col-sm-4">
+                    <h6 class="fw-bold">Reste à payé:</h6>
+                    <p><strong>{{ order.balance }} Fcfa</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Items Table with Batch Selection -->
+    <div class="card mb-4 shadow-sm border-0">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="card-title mb-0">Articles de la Commande</h5>
+        </div>
+        <div class="card-body p-0">
+            <form id="batchForm">
+                {% csrf_token %}
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Lot de traitement</th>
+                                    
+                            <th>Type de Vêtement</th>
+                            <th>Caractéristique</th>
+                            <th>Service</th>
+                            <th>Couleur</th>
+                            <th>Marque</th>
+                            <th>Anormalie</th>
+                            <th>Description</th>
+                            <th>Prix Unitaire</th>
+                            <th>Quantité</th>
+                            <th>Total Ligne</th>
+                            
+                            <th>statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.line_items.all %}
+                            <tr>
+                                
+                                <td>
+                                    {% if item.batch %}
+                                    <!-- Display batch info if assigned -->
+                                    <span class="badge bg-info">Batch {{ item.batch.batch_id }}</span>
+                                    {% else %}
+                                        Non assigné
+                                    {% endif %}
+                                </td>
+                                        
+                                    
+                                
+                                <td>{{ item.item_type.name }}</td>
+                                <td>{{ item.characteristic.name }}</td>
+                                <td>{{ item.service.name }}</td>
+                                <td>{{ item.color }}</td>
+                                <td>{{ item.brand }}</td>
+                                <td>{{ item.anormaly }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.base_price }} Fcfa</td>
+
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.line_total }} Fcfa</td>
+                                <td> 
+                                    {% if item.status == 'draft' %}
+                                        <span class="badge bg-warning">Brouillon</span>
+                                    {% elif item.status == 'pending' %}
+                                        <span class="badge bg-warning">En attente</span>
+                                    {% elif item.status == 'production' %}
+                                        <span class="badge bg-info">En Production</span>
+                                    {% elif item.status == 'completed' %}
+                                        <span class="badge bg-secondary">Retour de production</span>
+                                    {% elif item.status == 'delivered' %}
+                                        <span class="badge bg-success">Livré</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-3">Aucun article dans cette commande.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                
+            </form>
+        </div>
+    </div>
+
+    <!-- Batch Creation Modal -->
+    <div class="modal fade" id="createBatchModal" tabindex="-1" aria-labelledby="createBatchModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createBatchModalLabel">Créer un Nouveau Batch</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="batchCreationForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="batch_name" class="form-label">Nom du Batch (facultatif)</label>
+                            <input type="text" name="batch_name" id="batch_name" class="form-control">
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="submitBatch()">Créer le Batch</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="orderDeliveryModal" tabindex="-1" aria-labelledby="batchCreationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="batchCreationModalLabel">Livraison</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Table of Available Products -->
+                    <table class="table table-bordered" id="availableProductsTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col"><input type="checkbox" id="selectAll" onclick="toggleAllSelections(this)"></th>
+                                <th scope="col">Type de Vêtement</th>
+                                <th scope="col">Caractéristique</th>
+                                <th scope="col">Service</th>
+                                <th scope="col">Couleur</th>
+                                <th scope="col">Marque</th>
+                                <th scope="col">Anormalie</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Quantite</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.get_complete_items %}
+                            <tr>
+                                <td>
+                                    
+                                        <!-- Checkbox for selection if not yet batched -->
+                                        <input type="checkbox" name="order_items" value="{{ item.id }}" class="item-checkbox">
+                                </td>
+                               
+                                <td>{{ item.item_type.name }}</td>
+                                <td>{{ item.characteristic.name }}</td>
+                                <td>{{ item.service.name }}</td>
+                                <td>{{ item.color }}</td>
+                                <td>{{ item.brand }}</td>
+                                <td>{{ item.anormalie }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.quantity }}</td>
+                                
+                            </tr>
+                            {% empty %}
+
+                            <tr>
+                                <td colspan="8" class="text-center py-3">Les vetements sont encore en production.</td>
+                            </tr>
+                        
+                        {% endfor %}
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuller</button>
+                    <button type="button" class="btn btn-primary" onclick="markItemsAsDelivered()">Marquer comme livrer.</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="batchCreationModal" tabindex="-1" aria-labelledby="batchCreationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="batchCreationModalLabel">Creation de lot de production</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Table of Available Products -->
+                    <table class="table table-bordered" id="availableProductsTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col"><input type="checkbox" id="selectAll" onclick="toggleAllSelections(this)"></th>
+                                <th scope="col">Type de Vêtement</th>
+                                <th scope="col">Caractéristique</th>
+                                <th scope="col">Service</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Quantite</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.get_pending_items %}
+                            <tr>
+                                <td>
+                                    
+                                        <!-- Checkbox for selection if not yet batched -->
+                                        <input type="checkbox" name="order_items" value="{{ item.id }}" class="item-checkbox">
+                                </td>
+                               
+                                <td>{{ item.item_type.name }}</td>
+                                <td>{{ item.characteristic.name }}</td>
+                                <td>{{ item.service.name }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.quantity }}</td>
+                                
+                            </tr>
+                            {% empty %}
+
+                            <tr>
+                                <td colspan="8" class="text-center py-3">Il ne reste plus d'article en attente.</td>
+                            </tr>
+                        
+                        {% endfor %}
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuller</button>
+                    <button type="button" class="btn btn-primary" onclick="submitBatch()">Creer un lot de production</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batch Tracking Section -->
+    <div class="card shadow-sm border-0 mt-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="card-title mb-0">Suivi des Lots</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Lot N</th>
+                        <th>Date de Création</th>
+                        <th>Nombre d'Articles</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for batch in batches %}
+                        <tr>
+                            <td>{{ batch.batch_id }}</td>
+                            <td>{{ batch.created_at|date:"d/m/Y" }}</td>
+                            <td>{{ batch.items_count }}</td>
+                            <td>
+                                {% if batch.status == 'in_production' %}
+                                    <span class="badge bg-info">En lavage</span>
+                                {% elif batch.status == 'completed' %}
+                                    <span class="badge bg-success">Retour de production</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'batch_detail' batch.batch_id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> Voir
+                                </a>
+                                {% if batch.status != 'completed' %}
+                                    <button type="button" class="btn btn-success" onclick="updateBatchStatus('{{ batch.batch_id }}')">Marquer comme Complété</button>
+                                {% endif %}
+                                <button class="btn btn-sm btn-secondary" onclick="printReceipt('{{batch.receipt_url}}')">
+                                    <i class="fas fa-print"></i> Imprimer la fiche de comptage
+                                </button>
+                                
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-3">Aucun batch existant pour cette commande.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm border-0 mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="card-title mb-0">Suivi des Paiements</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date de Paiement</th>
+                        <th>Montant</th>
+                        <th>Méthode de Paiement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.payment_date|date:"d/m/Y" }}</td>
+                            <td>{{ payment.amount }} Fcfa</td>
+                            <td>
+                                {% if payment.payment_method == 'cash' %}
+                                    Espèces 
+                                {% elif payment.payment_method == 'mobile' %}
+                                    Paiement Mobile
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-3">Aucun paiement enregistré pour cette commande.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if order.status == 'draft' %}
+        <a href="{% url 'order_delete' order.id %}" class="btn btn-danger mt-2">
+            <i class="fas fa-trash-alt"></i> Supprimer la facture
+        </a>
+    {% endif %}
+
+    <!-- Batch Submission Script -->
+    <script>
+
+    $(document).ready(function() {
+        // Select All checkbox functionality
+        $('#selectAll').on('change', function() {
+            $('.item-checkbox').prop('checked', this.checked);
+            
+            toggleAddToLaundryButton();
+            
+        });
+
+        // Toggle Add to Laundry button based on item checkboxes
+        $('.item-checkbox').on('change', function() {
+            toggleAddToLaundryButton();
+        });
+
+        // Show/hide the Add to Laundry button
+        function toggleAddToLaundryButton() {
+            if ($('.item-checkbox:checked').length > 0) {
+                
+                    $('#addToLaundryButton').show();
+                
+                    $('#markAsDeliveredButton').show();
+                
+            } else {
+                $('#addToLaundryButton').hide();
+                $('#markAsDeliveredButton').hide();
+            }
+        }
+    });
+
+    function toggleAllSelections(selectAllCheckbox) {
+        const checkboxes = document.querySelectorAll('.item-checkbox');
+        checkboxes.forEach((checkbox) => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+    }
+
+        function markItemsAsDelivered() {
+            const selectedItems = Array.from(document.querySelectorAll('.item-checkbox:checked')).map(cb => cb.value);
+            
+            if (selectedItems.length > 0) {
+                $.ajax({
+                    url: '{% url "mark_items_as_delivered" %}',
+                    type: 'POST',
+                    data: {
+                        'order_item_ids': selectedItems,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.result === "success") {
+                            alert("Les articles sélectionnés ont été marqués comme livrés !");
+                            location.reload();
+                        } else {
+                            alert("Erreur : " + response.errors);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert("Une erreur s'est produite lors de la mise à jour des articles.");
+                    }
+                });
+            }
+        }
+
+        function printReceipt(url) {
+            return new Promise((resolve, reject) => {
+                // Your printing logic here
+                try {
+                    const windowFeatures = "width=80,height=297,resizable=yes,scrollbars=yes";
+                        const printWindow = window.open(url, windowFeatures, '_blank');
+                        printWindow.onload = function() {
+                            printWindow.print();
+                            printWindow.close();
+                            
+                            
+                        };
+                    resolve(); // Resolve the promise if successful
+                } catch (error) {
+                    reject(error); // Reject the promise if there's an error
+                }
+            });
+        }
+
+
+        function submitBatch() {
+            const selectedItems = [];
+            $('input[name="order_items"]:checked').each(function() {
+                selectedItems.push($(this).val());
+            });
+
+            const formData = {
+                'batch_name': $('#batch_name').val(),
+                'order_items': selectedItems,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            };
+
+            $.ajax({
+                url: '{% url "create_batch" order.id %}',
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.result === "success") {
+                        alert("Batch créé avec succès!");
+                        location.reload();
+                    } else {
+                        alert("Erreur: " + JSON.stringify(response.errors));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("Une erreur s'est produite lors de la création du batch.");
+                }
+            });
+        }
+
+
+        function openBatchCreateForm() {
+            $('#batchCreationModal').modal('show');
+
+            
+        }
+
+        function openDeliveringForm(){
+            $('#orderDeliveryModal').modal('show');
+        }
+
+        function updateBatchStatus(batchId) {
+            $.ajax({
+                url:   `/orders/batches/` +   `${batchId}` + `/update_status/`,
+                type: 'POST',
+                data: {
+                    'status': 'completed',
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.result === "success") {
+                        alert("Lot marqué comme complété !");
+                        location.reload();
+                    } else {
+                        alert("Erreur: " + response.errors);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("Une erreur s'est produite lors de la mise à jour du statut du lot.");
+                }
+            });
+        }
+    </script>
+{% endblock %}

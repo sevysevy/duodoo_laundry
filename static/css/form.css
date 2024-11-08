@@ -1,0 +1,61 @@
+/* Container to center form */
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Form styling */
+.styled-form .form-group {
+    margin-bottom: 15px;
+}
+
+.styled-form label {
+    font-weight: bold;
+    color: #1E3A8A;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-control {
+    width: 100%;
+    font-size: 1rem;
+    border: 1px solid #CBD5E0;
+    border-radius: 5px;
+    transition: border-color 0.3s ease;
+}
+
+select,input.form-control{
+    min-height: 50px;
+}
+
+.form-control:focus {
+    border-color: #2563EB;
+    outline: none;
+    box-shadow: 0px 0px 5px rgba(37, 99, 235, 0.3);
+}
+
+/* Submit button styling */
+.btn-primary {
+    background-color: #2563EB;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #1E40AF;
+}
+
+.select-height {
+    height: calc(2.375rem + 2px);  /* Set height similar to the button */
+    padding-top: 0.375rem;         /* Center text vertically */
+    padding-bottom: 0.375rem;
+}

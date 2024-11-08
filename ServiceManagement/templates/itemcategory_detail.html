@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ category.name }} - Types de Vêtement{% endblock %}
+{% block header %}Types de Vêtement pour {{ category.name }}{% endblock %}
+
+{% block content %}
+<h2>Types de Vêtement pour la Catégorie: {{ category.name }}</h2>
+<p>{{ category.description }}</p>
+
+<!-- Table displaying associated ItemTypes -->
+<h3>Liste des Types de Vêtement</h3>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- Left-aligned button -->
+    <a href="{% url 'itemcategory_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Retour à la Liste des Catégories</a>
+
+    <!-- Right-aligned button -->
+    <button type="button" class="btn btn-primary" onclick="showAddItemTypeModal()">
+        <i class="fas fa-plus"></i> Ajouter un Type de Vêtement
+    </button>
+</div>
+
+
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item_type in item_types %}
+        <tr>
+            <td>{{ item_type.name }}</td>
+            <td>
+                <button type="button" class="btn btn-secondary" onclick="showUpdateItemTypeModal('{{ item_type.pk }}', '{{ item_type.name }}')">
+                    <i class="fas fa-edit"></i> Modifier
+                </button>
+                <a href="{% url 'itemtype_delete' item_type.pk %}" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Supprimer
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="2">Aucun type de vêtement trouvé pour cette catégorie.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<!-- Button to open the modal for adding a new ItemType -->
+
+
+<!-- Modal structure for adding a new ItemType -->
+<div class="modal fade" id="addItemTypeModal" tabindex="-1" aria-labelledby="addItemTypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addItemTypeModalLabel">Ajouter un Type de Vêtement</h5>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('#addItemTypeModal')">X</button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="addCategoryForm" action="{% url 'itemcategory_detail' category.pk %}">
+                    {% csrf_token %}
+                    {{ add_form|crispy }}
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('#addItemTypeModal')">Annuler</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="updateItemTypeModal" tabindex="-1" aria-labelledby="updateItemTypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateItemTypeModalLabel">Modifier le Type de Vêtement</h5>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('#updateItemTypeModal')">X</button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="updateCategoryForm" action="{% url 'itemcategory_detail' category.pk %}">
+                    {% csrf_token %}
+                    {{ update_form|crispy }}
+                    <input type="hidden" name="item_type_id" id="update-item-type-id">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('#updateItemTypeModal')">Annuler</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function showAddItemTypeModal() {
+        $('#addItemTypeModal').modal('show');
+    }
+
+    // Function to close the modal
+    function closeModal(modalId) {
+        $(modalId).modal('hide');
+    }
+
+    function showUpdateItemTypeModal(itemTypeId, itemName) {
+        $('#update-item-type-id').val(itemTypeId); // Set item type ID for update
+        $('#updateCategoryForm [name="name"]').val(itemName); // Preload name field
+        $('#updateItemTypeModal').modal('show');
+    }
+
+
+    $(document).ready(function() {
+    // Handle Add Form Submission
+    $("#addCategoryForm").on("submit", function(event) {
+        event.preventDefault();
+
+        const form = $(this);
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: form.attr("action"),
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            success: function(data) {
+                if (data.success) {
+                    closeModal('#addItemTypeModal');
+                    location.reload();
+                } 
+            },
+            error: function(xhr) {
+                if (xhr.status === 400) {  // Check for 400 Bad Request error
+                    const response = xhr.responseJSON;
+                    if (response && !response.success && response.errors) {
+                        displayErrors(form, response.errors);  // Display validation errors
+                    }
+                } else {
+                    console.error("An unexpected error occurred:", xhr);
+                }
+            }
+        });
+    });
+
+    // Handle Update Form Submission
+    $("#updateCategoryForm").on("submit", function(event) {
+        event.preventDefault();
+        const form = $(this);
+        const formData = new FormData(this);
+
+        $.ajax({
+            url: form.attr("action"),
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                if (data.success) {
+                    closeModal('#updateItemTypeModal');
+                    location.reload(); // Reload page to show updated item
+                }
+            },
+            error: function(xhr) {
+                if (xhr.status === 400) {  // Check for 400 Bad Request error
+                    const response = xhr.responseJSON;
+                    if (response && !response.success && response.errors) {
+                        displayErrors(form, response.errors);  // Display validation errors
+                    }
+                } else {
+                    console.error("An unexpected error occurred:", xhr);
+                }
+            }
+        });
+    });
+
+    $('#addItemTypeModal').on('hidden.bs.modal', function () {
+        $('#addCategoryForm')[0].reset();  // Reset the form fields
+        $('#addCategoryForm .error-message').remove();  // Optionally clear any error messages
+    });
+});
+
+// Function to display validation errors
+function displayErrors(form, errors) {
+    console.log("display error")
+    form.find(".error-message").remove();
+    $.each(errors, function(field, messages) {
+        const input = form.find("[name=" + field + "]");
+        messages.forEach(function(message) {
+            input.after("<div class='error-message text-danger'>" + message + "</div>");
+        });
+    });
+}
+
+
+</script>
+{% endblock %}

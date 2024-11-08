@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Liste des Catégories{% endblock %}
+{% block header %}Liste des Catégories{% endblock %}
+
+{% block content %}
+<h2>Catégories d'Articles</h2>
+<a href="{% url 'itemcategory_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Ajouter une Catégorie</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for category in categories %}
+        <tr>
+            <td>{{ category.name }}</td>
+            <td>{{ category.description }}</td>
+            <td>
+                <a href="{% url 'itemcategory_detail' category.id %}" class="btn btn-info">
+                    <i class="fas fa-eye"></i>Voir
+                </a>
+                <a href="{% url 'itemcategory_update' category.pk %}" class="btn btn-secondary"><i class="fas fa-edit"></i> Modifier</a>
+                <a href="{% url 'itemcategory_delete' category.pk %}" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Supprimer</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="pagination">
+    {% if categories.has_previous %}
+        <a href="?page=1" class="pagination-link first">&laquo; Premiere page</a>
+        <a href="?page={{ categories.previous_page_number }}" class="pagination-link prev">Precedent</a>
+    {% endif %}
+
+    {% for num in categories.paginator.page_range %}
+        {% if categories.number == num %}
+            <span class="pagination-link active">{{ num }}</span>
+        {% elif num > categories.number|add:-3 and num < categories.number|add:3 %}
+            <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if categories.has_next %}
+        <a href="?page={{ categories.next_page_number }}" class="pagination-link next">Suivant</a>
+        <a href="?page={{ categories.paginator.num_pages }}" class="pagination-link last">Derniere page &raquo;</a>
+    {% endif %}
+</div>
+{% endblock %}

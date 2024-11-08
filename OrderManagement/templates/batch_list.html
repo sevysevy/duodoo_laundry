@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Liste des Lots{% endblock %}
+
+{% block content %}
+
+    <h2 class="mb-4">Liste des Lots d'envoi en production</h2>
+
+    <div style="text-align: right; margin-bottom: 10px;">
+        <button class="btn btn-sm btn-primary mb-2" onclick="openTotalBatchCreateForm()">
+            <i class="fas fa-shirt"></i> Envoyer des vetements en production
+        </button>
+    </div>
+    <!-- Batch Table -->
+    <div class="card mb-4 shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Liste</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Code Production</th>
+                        <th>Date d'envoie en production</th>
+                        <th>Nombre de piece de vetements</th>
+                        <th>Statut</th>
+                        <th>Détails</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for batch in batches %}
+                        <tr>
+                            <td>{{ batch.batch_id }}</td>
+                            <td>{{ batch.created_at|date:"d/m/Y" }}</td>
+                            <td>{{ batch.items_count }}</td>
+                            <td>
+                                
+                                {% if batch.status == 'in_production' %}
+                                    <span class="badge bg-info">En lavage</span>
+                                {% elif batch.status == 'completed' %}
+                                    <span class="badge bg-success">Retour de production</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'batch_detail' batch.batch_id %}" class="btn btn-sm btn-secondary">Voir Détails</a>
+                                {% if batch.status != 'completed' %}
+                                    <button type="button" class="btn btn-success" onclick="updateBatchStatus('{{ batch.batch_id }}')">Marquer le retour de production</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-3">Aucun lot trouvé.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                {% if batches.has_previous %}
+                    <a href="?page=1" class="pagination-link first">&laquo; Premiere page</a>
+                    <a href="?page={{ batches.previous_page_number }}" class="pagination-link prev">Precedent</a>
+                {% endif %}
+            
+                {% for num in batches.paginator.page_range %}
+                    {% if batches.number == num %}
+                        <span class="pagination-link active">{{ num }}</span>
+                    {% elif num > batches.number|add:-3 and num < batches.number|add:3 %}
+                        <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+            
+                {% if batches.has_next %}
+                    <a href="?page={{ batches.next_page_number }}" class="pagination-link next">Suivant</a>
+                    <a href="?page={{ batches.paginator.num_pages }}" class="pagination-link last">Derniere page &raquo;</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="batchCreationModal" tabindex="-1" aria-labelledby="batchCreationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="batchCreationModalLabel">Veuillez selectionner les vetements a envoyer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Table of Available Products -->
+                    <table class="table table-bordered" id="availableProductsTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col"><input type="checkbox" id="selectAll" onclick="toggleAllSelections(this)"></th>
+                                <th scope="col">Commande #</th>
+                                <th scope="col">Type de Vêtement</th>
+                                <th scope="col">Caractéristique</th>
+                                <th scope="col">Service</th>
+                                <th scope="col">Couleur</th>
+                                <th scope="col">Marque</th>
+                                <th scope="col">Anormalie</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Quantite</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in available_items %}
+                            <tr>
+                                <td>
+                                    
+                                        <!-- Checkbox for selection if not yet batched -->
+                                        <input type="checkbox" name="order_items" value="{{ item.id }}" class="item-checkbox">
+                                </td>
+                                <td>
+                                    <input type="text" name="order_id" value="{{ item.order.id }}" class="item-checkbox" hidden/>
+                                    <a href="{% url 'order_detail' item.order.id %}" >
+                                        {{item.order.id}}
+                                    </a>
+                                </td>
+
+                                <td>
+                                    <input type="text" name="order_id" value="{{ item.order.id }}" class="item-checkbox" hidden/>
+                                    <a href="{% url 'order_detail' item.order.id %}" >
+                                        {{item.order.client.fullName}}
+                                    </a>
+                                </td>
+                               
+                                <td>{{ item.item_type.name }}</td>
+                                <td>{{ item.characteristic.name }}</td>
+                                <td>{{ item.service.name }}</td>
+                                <td>{{ item.color }}</td>
+                                <td>{{ item.brand}}</td>
+                                <td>{{ item.anormaly }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.quantity }}</td>
+                                
+                            </tr>
+                            {% empty %}
+
+                            <tr>
+                                <td colspan="8" class="text-center py-3">Vous n'avez aucun vetement en attente.</td>
+                            </tr>
+                        
+                        {% endfor %}
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuller</button>
+                    <button type="button" class="btn btn-primary" onclick="submitBatch()">Envoyer en production</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+
+$(document).ready(function() {
+        // Select All checkbox functionality
+        $('#selectAll').on('change', function() {
+            $('.item-checkbox').prop('checked', this.checked);
+            
+            toggleAddToLaundryButton();
+            
+        });
+
+        // Toggle Add to Laundry button based on item checkboxes
+        $('.item-checkbox').on('change', function() {
+            toggleAddToLaundryButton();
+        });
+
+        // Show/hide the Add to Laundry button
+        function toggleAddToLaundryButton() {
+            if ($('.item-checkbox:checked').length > 0) {
+                
+                    $('#addToLaundryButton').show();
+                
+                    $('#markAsDeliveredButton').show();
+                
+            } else {
+                $('#addToLaundryButton').hide();
+                $('#markAsDeliveredButton').hide();
+            }
+        }
+    });
+
+    function toggleAllSelections(selectAllCheckbox) {
+        const checkboxes = document.querySelectorAll('.item-checkbox');
+        checkboxes.forEach((checkbox) => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+    }
+    // Function to open the delete confirmation modal and set the delete URL
+    function openTotalBatchCreateForm() {
+        $('#batchCreationModal').modal('show');
+
+        
+    }
+
+    function submitBatch() {
+            const selectedItems = [];
+            const orderItems = $('#availableProductsTable tr');
+            var i = 0
+            orderItems.each(function() {
+                if($(this).find('input[name="order_items"]:checked').val()){
+
+                    var obj = {
+                        'order_id': $(this).find('input[name="order_id"]').val(),
+                        'item_id': $(this).find('input[name="order_items"]:checked').val()
+                    }
+                    selectedItems.push(obj);
+                    i++
+                }
+                
+                
+            });
+
+            const formData = {
+                'batch_name': $('#batch_name').val(),
+                'order_items': selectedItems,
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+                'count' : i
+            };
+
+            $.ajax({
+                url: '{% url "create_batch_multy" %}',
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.result === "success") {
+                        printReceipt(response.receipt).then(()=>{
+                            window.location.href = "{% url 'batch_list' %}"}
+                        )
+                    } else {
+                        alert("Erreur: " + JSON.stringify(response.errors));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("Une erreur s'est produite lors de la création du batch.");
+                }
+            });
+        }
+
+        function printReceipt(url) {
+            return new Promise((resolve, reject) => {
+                // Your printing logic here
+                try {
+                    const windowFeatures = "width=80,height=297,resizable=yes,scrollbars=yes";
+                        const printWindow = window.open(url, windowFeatures, '_blank');
+                        printWindow.onload = function() {
+                            printWindow.print();
+                            printWindow.close();
+                            
+                            
+                        };
+                    resolve(); // Resolve the promise if successful
+                } catch (error) {
+                    reject(error); // Reject the promise if there's an error
+                }
+            });
+        }
+
+        function updateBatchStatus(batchId) {
+        $.ajax({
+            url: '/orders/batches/' + batchId + '/update_status/',
+            type: 'POST',
+            data: {
+                'status': 'completed',
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.result === "success") {
+                    alert("Lot marqué comme complété !");
+                    location.reload();
+                } else {
+                    alert("Erreur: " + response.errors);
+                }
+            },
+            error: function(xhr, status, error) {
+                alert("Une erreur s'est produite lors de la mise à jour du statut du lot.");
+            }
+        });
+    }
+
+    </script>
+{% endblock %}

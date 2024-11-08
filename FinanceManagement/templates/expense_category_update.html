@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Modifier Catégorie de Dépense{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Modifier Catégorie de Dépense</h2>
+    <form method="post" action="{% url 'expense_category_update' category.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="name">Nom</label>
+            <input type="text" name="name" id="name" value="{{ category.name }}" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea name="description" id="description" class="form-control">{{ category.description }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Mettre à jour</button>
+        <a href="{% url 'expense_category_list' %}" class="btn btn-secondary mt-3">Annuler</a>
+    </form>
+</div>
+{% endblock %}
