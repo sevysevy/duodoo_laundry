@@ -1,10 +1,15 @@
 from django.db import models
 from django.urls import reverse
-from django.utils import timezone
 
 from ServiceManagement.models import ItemCharacteristic, ItemType, Service
 from UserManagement.models import UserProfile
+from decimal import Decimal
 
+from django.utils import timezone
+from datetime import timedelta
+
+def default_two_days_later():
+    return timezone.now().date() + timedelta(days=2)
 
 class Batch(models.Model):
     BATCH_STATUS_CHOICES = [
@@ -78,11 +83,12 @@ class Order(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=50, choices=ORDER_STATUS_CHOICES, default="draft")
     payment_status = models.CharField(max_length=50, choices=PAYMENT_STATUS_CHOICES, default="pending")
+    session = models.ForeignKey('Core.SaleSession', on_delete=models.SET_NULL, null=True, blank=True)
     date = models.DateField(default=timezone.now)
     ristourne = models.IntegerField(null=True)
     total = models.IntegerField()
     balance = models.IntegerField(null=True)
-    delivery_date = models.DateField(null=True )
+    delivery_date = models.DateField(null=True , default=default_two_days_later )
 
 
     def amount_paid(self):
@@ -195,6 +201,8 @@ class Order(models.Model):
     def update_balance(self):
         payments_total = sum(payment.amount for payment in self.payments.all())
         self.balance = self.total - payments_total
+        if self.balance < 0:
+            self.balance = 0
         self.save()
 
 
@@ -213,6 +221,16 @@ class OrderLineItem(models.Model):
         ('Moisissure', 'Moisissure'),
         ('Teinte', 'Teinte'),
         ('Delaver', 'Delaver'),
+        ('Trou' , "Trou"),
+        ("Rouille" , " Rouille"),
+        ("Boue" , "Boue"),
+        ("Encre" , "Encre"),
+        ("Aureole" , "Aureole"),
+        ("Brullure" , "Brullure"),
+        ("Effiloche" , "Effiloche"),
+        ("Deteint" , "Deteint"),
+        ("Decousu" , "Decousu"),
+        ("Bouton Manquant" , "Bouton Manquant")
 
     ]
     
@@ -247,6 +265,7 @@ class Payment(models.Model):
 
     order = models.ForeignKey(Order, related_name='payments', on_delete=models.CASCADE)
     amount = models.IntegerField()
+    session = models.ForeignKey('Core.SaleSession', on_delete=models.SET_NULL, null=True, blank=True)
     payment_date = models.DateTimeField(default=timezone.now)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
 
@@ -255,6 +274,8 @@ class Payment(models.Model):
         # Update order balance whenever a payment is made
         self.order.update_balance()
         self.order.update_payment_state()
+        if self.session:
+            self.session.add_fund(Decimal(self.amount)) 
 
     def __str__(self):
         return f"Payment of {self.amount} for Order #{self.order.pk}"

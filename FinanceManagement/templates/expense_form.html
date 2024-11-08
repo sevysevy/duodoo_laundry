@@ -7,9 +7,9 @@
     <form method="post">
         {% csrf_token %}
         <div class="form-group">
-            <label for="category">Selectionner le type de depense</label>
+            <label for="category">Selectionner le type</label>
             <select name="category" id="category" class="form-control" required>
-                <option value="">--Selectionner le type de depense--</option>
+                <option value="">--Selectionner le type sortie--</option>
                 {% for category in categories %}
                     <option value="{{ category.id }}" {% if expense and expense.category.id == category.id %}selected{% endif %}>
                         {{ category.name }}
@@ -31,6 +31,17 @@
         <div class="form-group">
             <label for="description">Description</label>
             <textarea name="description" id="description" class="form-control">{{ expense.description|default_if_none:'' }}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="partner">Methode de paiement</label>
+            <select name="partner" id="partner" class="form-control">
+                <option value="">--Sélectionner une methode de paiement--</option>
+                {% for methode in payment_method %}
+                    <option value="{{ method.id }}" {% if expense and expense.payment_method and expense.payment_method.id == method.id %}selected{% endif %}>
+                        {{ method.name }}
+                    </option>
+                {% endfor %}
+            </select>
         </div>
         <div class="form-group">
             <label for="amount">Montant</label>

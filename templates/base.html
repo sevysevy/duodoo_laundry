@@ -26,51 +26,53 @@
             </div>
             <button class="toggle-sidebar" onclick="toggleSidebar()">☰</button>
             <nav class="header-links">
-                <a href="{ url 'profile' }">Profile</a>
-                <a href="{ url 'notifications' }">Notifications</a>
-                <a href="{ url 'logout' }">Logout</a>
+                
+                <a href="{% url 'logout' %}">Deconnexion</a>
             </nav>
         </header>
 
         <aside class="sidebar">
             <nav>
                 <ul>
-                    <!--li><a href="{ url 'dashboard' }"> <i class="fas fa-tachometer-alt"></i> Dashboard</a></li-->
-                    <li>
-                        <a href="javascript:void(0);" onclick="toggleSubmenu('order-management-submenu')"><i class="fas fa-shopping-basket"></i>Gestion des commandes</a>
-                        <ul class="submenu {% if request.resolver_match.url_name in 'order_create,batch_detail,batch_list,order_list' %}active{% endif %}" id="order-management-submenu">
-                            <li><a href="{% url 'order_list' %}" class="{% if request.resolver_match.url_name in 'order_list,order_create,order_detail' %}active{% endif %}"><i class="fas fa-users"></i>Commandes</a></li>
-                            <li><a href="{% url 'batch_list' %}" class="{% if request.resolver_match.url_name in 'batch_list,batch_detail' %}active{% endif %}"><i class="fas fa-soap"></i>Envoyer en production</a></li>
-                        </ul>
-                    
-                    </li>
-                    <!--li><a href="{ url 'customer_management' }"><i class="fas fa-users"></i> Customer Management</a></li-->
-                    <li>
-                        <a href="javascript:void(0);" onclick="toggleSubmenu('service-management-submenu')"><i class="fas fa-hands-helping"></i> Gestion des services</a>
-                        <ul class="submenu {% if request.resolver_match.url_name in 'service_list,itemtype_list' %}active{% endif %}" id="service-management-submenu">
-                            <li><a href="{% url 'service_list' %}" class="{% if request.resolver_match.url_name in 'service_list' %}active{% endif %}"><i class="fas fa-users"></i> Services</a></li>
-                            <li><a href="{% url 'pricelist_list' %}" class="{% if request.resolver_match.url_name in 'pricelist_list' %}active{% endif %}"><i class="fas fa-users"></i> Grille Tarifaire</a></li>
-                            <li><a href="{% url 'itemcategory_list' %}" class="{% if request.resolver_match.url_name in 'itemtype_list' %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Categories de vetement</a></li>
-                            <li><a href="{% url 'itemtype_list' %}" class="{% if request.resolver_match.url_name in 'itemtype_list' %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Types de vetement</a></li>
-                            <li><a href="{% url 'itemcharacteristic_list' %}" class="{% if request.resolver_match.url_name in 'itemcharacteristic_list' %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Caracteristiques de vetement</a></li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0);" onclick="toggleSubmenu('expense-submenu')"><i class="fas fa-hands-helping"></i> Gestion des finance</a>
-                        <ul class="submenu {% if request.resolver_match.url_name in 'expense_category_create,expense_category_list,expense_category_update,expense_category_delete' %}active{% endif %}" id="expense-submenu">
-                            <li><a href="{% url 'expense_list' %}" class="{% if request.resolver_match.url_name in 'expense_create,expense_list,expense_update,expense_delete' %}active{% endif %}"><i class="fas fa-users"></i> Enregistrer vos depenses</a></li>
-                            <li><a href="{% url 'expense_category_list' %}" class="{% if request.resolver_match.url_name in 'expense_category_create,expense_category_list,expense_category_update,expense_category_delete' %}active{% endif %}"><i class="fas fa-users"></i> Categories de depenses</a></li>
-                        </ul>
-                    </li>
-                    <!--li><a href="{ url 'reporting' }"><i class="fas fa-chart-line"></i> Reporting</a></li-->
-                    
-                    <li>
-                        <a href="javascript:void(0);" onclick="toggleSubmenu('user-management-submenu')"><i class="fas fa-wrench"></i> Gestion des utilisateurs</a>
-                        <ul class="submenu {% if request.resolver_match.url_name in 'role_list,userprofile_list' %}active{% endif %}" id="user-management-submenu">
-                            <li><a href="{% url 'userprofile_list' %}" class="{% if request.resolver_match.url_name == 'userprofile_list' %}active{% endif %}"><i class="fas fa-users"></i> Utilisateur</a></li>
-                            <li><a href="{% url 'role_list' %}" class="{% if request.resolver_match.url_name == 'role_list' %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Role</a></li>
-                        </ul>
-                    </li>
+                    <li><a href="{% url 'home' %}"> <i class="fas fa-tachometer-alt"></i> Accueil</a></li-->
+                    {% if has_valid_session %}
+                        <li>
+                            <a href="javascript:void(0);" onclick="toggleSubmenu('order-management-submenu')"><i class="fas fa-shopping-basket"></i>Gestion des commandes</a>
+                            <ul class="submenu {% if request.resolver_match.url_name in 'order_create,batch_detail,batch_list,order_list' %}active{% endif %}" id="order-management-submenu">
+                                <li><a href="{% url 'order_list' %}" class="{% if request.resolver_match.url_name in 'order_list,order_create,order_detail' %}active{% endif %}"><i class="fas fa-users"></i>Commandes</a></li>
+                                <li><a href="{% url 'batch_list' %}" class="{% if request.resolver_match.url_name in 'batch_list,batch_detail' %}active{% endif %}"><i class="fas fa-soap"></i>Envoyer en production</a></li>
+                            </ul>
+                        
+                        </li>
+                        <!--li><a href="{ url 'customer_management' }"><i class="fas fa-users"></i> Customer Management</a></li-->
+                        <li>
+                            <a href="javascript:void(0);" onclick="toggleSubmenu('service-management-submenu')"><i class="fas fa-hands-helping"></i> Gestion des services</a>
+                            <ul class="submenu {% if request.resolver_match.url_name in 'service_list,itemtype_list' %}active{% endif %}" id="service-management-submenu">
+                                <li><a href="{% url 'service_list' %}" class="{% if request.resolver_match.url_name in 'service_list' %}active{% endif %}"><i class="fas fa-users"></i> Services</a></li>
+                                <li><a href="{% url 'pricelist_list' %}" class="{% if request.resolver_match.url_name in 'pricelist_list' %}active{% endif %}"><i class="fas fa-users"></i> Grille Tarifaire</a></li>
+                                <li><a href="{% url 'itemcategory_list' %}" class="{% if request.resolver_match.url_name in 'itemtype_list' %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Categories de vetement</a></li>
+                                <li><a href="{% url 'itemtype_list' %}" class="{% if request.resolver_match.url_name in 'itemtype_list' %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Types de vetement</a></li>
+                                <li><a href="{% url 'itemcharacteristic_list' %}" class="{% if request.resolver_match.url_name in 'itemcharacteristic_list' %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Caracteristiques de vetement</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0);" onclick="toggleSubmenu('expense-submenu')"><i class="fas fa-hands-helping"></i> Gestion des finance</a>
+                            <ul class="submenu {% if request.resolver_match.url_name in 'expense_category_create,expense_category_list,expense_category_update,expense_category_delete' %}active{% endif %}" id="expense-submenu">
+                                <li><a href="{% url 'expense_list' %}" class="{% if request.resolver_match.url_name in 'expense_create,expense_list,expense_update,expense_delete' %}active{% endif %}"><i class="fas fa-users"></i> Enregistrer vos depenses</a></li>
+                                <li><a href="{% url 'expense_category_list' %}" class="{% if request.resolver_match.url_name in 'expense_category_create,expense_category_list,expense_category_update,expense_category_delete' %}active{% endif %}"><i class="fas fa-users"></i> Categories de depenses</a></li>
+                            </ul>
+                        </li>
+                        <!--li><a href="{ url 'reporting' }"><i class="fas fa-chart-line"></i> Reporting</a></li-->
+                        
+                        <li>
+                            <a href="javascript:void(0);" onclick="toggleSubmenu('user-management-submenu')"><i class="fas fa-wrench"></i> Gestion des utilisateurs</a>
+                            <ul class="submenu {% if request.resolver_match.url_name in 'role_list,userprofile_list' %}active{% endif %}" id="user-management-submenu">
+                                <li><a href="{% url 'agency_list' %}" class="{% if request.resolver_match.url_name == 'agency_list' %}active{% endif %}"><i class="fas fa-users"></i> Agence</a></li>
+                                <li><a href="{% url 'userprofile_list' %}" class="{% if request.resolver_match.url_name == 'userprofile_list' %}active{% endif %}"><i class="fas fa-users"></i> Utilisateur</a></li>
+                                <li><a href="{% url 'role_list' %}" class="{% if request.resolver_match.url_name == 'role_list' %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Role</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
                 </ul>
             </nav>
         </aside>

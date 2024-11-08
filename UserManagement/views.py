@@ -4,18 +4,17 @@ from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth import login as auth_login ,authenticate
-from django.http import HttpResponseBadRequest, HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponseBadRequest, HttpResponseRedirect, HttpResponseForbidden, JsonResponse
 from django.contrib.auth.models import User
 # Create your views here.
 from django.utils.decorators import method_decorator
 from django.contrib.auth import logout as auth_logout
 from django.views.decorators.csrf import csrf_protect , csrf_exempt
-
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Role, UserProfile
-from .forms import RoleForm, UserProfileForm
-
-
+from .models import Role, UserProfile , Agency
+from .forms import RoleForm, UserProfileForm , AgencyForm
+from django.contrib.auth import logout
 
 
 class Login(auth_views.LoginView):
@@ -23,14 +22,8 @@ class Login(auth_views.LoginView):
 
     
     def get_success_url(self):
-        if self.request.session.get("user_role") == "admin":
-            return reverse_lazy('users-list' , kwargs={'page': 1},) 
         
-        elif self.request.session.get("user_role") == "abonne":
-            return reverse_lazy('documentation-index') 
-
-        else:
-            return reverse_lazy('index' , kwargs={'page': 1},) 
+        return reverse_lazy('home') 
  
     def form_invalid(self, form):
         messages.error(self.request,'Identifiants invalide')
@@ -64,21 +57,26 @@ class Logout(auth_views.LogoutView):
     
 
     def get_success_url(self):
-        return reverse_lazy('index') 
+        return reverse_lazy('login') 
     
 
 
+def custom_logout(request):
+    logout(request)
+    return redirect('login')
 
 # Role views
+@login_required
 def role_list(request):
     roles = Role.objects.all().order_by('name')
     return render(request, 'role_list.html', {'roles': roles})
 
+@login_required
 def role_detail(request, role_id):
     role = get_object_or_404(Role, id=role_id)
     return render(request, 'role_detail.html', {'role': role})
 
-
+@login_required
 def role_create(request):
     if request.method == 'POST':
         form = RoleForm(request.POST)
@@ -90,6 +88,8 @@ def role_create(request):
         form = RoleForm()
     return render(request, 'role_form.html', {'form': form})
 
+
+@login_required
 def role_update(request, pk):
     role = get_object_or_404(Role, pk=pk)
     if request.method == 'POST':
@@ -102,6 +102,8 @@ def role_update(request, pk):
         form = RoleForm(instance=role)
     return render(request, 'role_form.html', {'form': form})
 
+
+@login_required
 def role_delete(request, pk):
     role = get_object_or_404(Role, pk=pk)
     if request.method == 'POST':
@@ -114,12 +116,14 @@ def role_delete(request, pk):
 
 
 
-
+@login_required
 # UserProfile views
 def userprofile_list(request):
     profiles = UserProfile.objects.all()
     return render(request, 'userprofil_list.html', {'profiles': profiles})
 
+
+@login_required
 def userprofile_create(request):
     if request.method == 'POST':
         form = UserProfileForm(request.POST)
@@ -157,6 +161,8 @@ def userprofile_create(request):
 
     return render(request, 'userprofile_form.html', {'form': form})
 
+
+@login_required
 def userprofile_update(request, pk):
     profile = get_object_or_404(UserProfile, pk=pk)
     if request.method == 'POST':
@@ -193,3 +199,116 @@ def userprofile_delete(request, pk):
 def userprofile_detail(request, pk):
     profile = get_object_or_404(UserProfile, pk=pk)
     return render(request, 'userprofil_detail.html', {'profile': profile})
+
+
+
+
+def create_user(request):
+
+    if request.method == "POST":
+        lastName = request.POST.get('lastName')
+        firstName = request.POST.get('firstName')
+        phone = request.POST.get('phone')
+        role_id = request.POST.get('role')
+        email  = request.POST.get('email')
+        password = request.POST.get('password')
+
+        role = ""
+
+        try:
+            role = Role.objects.get(id = role_id)
+
+            user = User(email = email , first_name=firstName , last_name=lastName , username = email )
+            user.set_password(password) 
+            user.save()
+
+            userProfile = UserProfile(user = user , firstName = firstName , lastName = lastName , 
+                                      fullName = firstName + " " + lastName , email = email , phone = phone , role = role , status = "active" )
+
+            userProfile.save()
+            context = {"id":userProfile.id}
+
+            messages.success(request, "Utilisateur créé avec succès.")
+            return redirect('userprofile_list') 
+        except Exception as e :
+            raise Exception(e)
+        
+    roles = Role.objects.all().order_by('name')
+    context = {"roles":roles}
+    return render(request, "create_user.html", context)
+
+
+
+@csrf_exempt
+def create_super_user(request):
+
+    if request.method == "POST":
+        print(request.POST)
+        lastName = request.POST.get('lastName')
+        firstName = request.POST.get('firstName')
+        phone = request.POST.get('phone')
+        email  = request.POST.get('email')
+        password = request.POST.get('password')
+
+        role = ""
+
+        try:
+            
+            role = Role.objects.get(name_code = "admin")
+
+            user = User(email = email , first_name=firstName , last_name=lastName , username = email , is_staff = True ,  is_superuser = True )
+            user.set_password(password) 
+            user.save()
+
+            userProfile = UserProfile(user = user , firstName = firstName , lastName = lastName , fullName = firstName + " " + lastName , email = email , phone = phone ,  role = role , status = "active" )
+
+            userProfile.save()
+            context = {"id":userProfile.id}
+            return JsonResponse(context)
+        except Exception as e :
+            raise Exception(e)
+        
+        
+    context = {}
+    return render(request, "users/management/create-user.html", context)
+
+
+
+# views
+@login_required
+def agency_list(request):
+    agencies = Agency.objects.all()
+    return render(request, 'agency_list.html', {'agencies': agencies})
+
+@login_required
+def agency_create(request):
+    if request.method == 'POST':
+        form = AgencyForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Agence créée avec succès.")
+            return redirect('agency_list')
+    else:
+        form = AgencyForm()
+    return render(request, 'agency_form.html', {'form': form})
+
+@login_required
+def agency_update(request, pk):
+    agency = get_object_or_404(Agency, pk=pk)
+    if request.method == 'POST':
+        form = AgencyForm(request.POST, instance=agency)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Agence mise à jour avec succès.")
+            return redirect('agency_list')
+    else:
+        form = AgencyForm(instance=agency)
+    return render(request, 'agency_form.html', {'form': form})
+
+def agency_delete(request, pk):
+    agency = get_object_or_404(Agency, pk=pk)
+    if request.method == 'POST':
+        agency.delete()
+        messages.success(request, "Agence supprimée avec succès.")
+        return redirect('agency_list')
+    return render(request, 'agency_confirm_delete.html', {'agency': agency})

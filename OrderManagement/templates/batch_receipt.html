@@ -58,7 +58,7 @@
         }
         
         .logo {
-            width: 150px;
+            width: 100px;
         }
     </style>
 </head>
@@ -66,12 +66,12 @@
     <div class="logo-div">
         <img class="logo" src="{% static 'images/logo.jpg' %}" />
     </div>
-    <p>Adresse: Obam</p>
-    <p>Téléphone: +237 656 431 945</p>
+    <p>Adresse: Obam - Repos du Chef</p>
+    <p>Téléphone: +237 690 92 27 47</p>
     <hr>
-    <h3>Lot de Linge {{ batch.batch_id }}</h3>
+    <h3>Fiche Production {{ batch.batch_id }}</h3>
     <p>Date: {{ batch.created_at|date:"d/m/Y" }}</p>
-    <p>Généré par: {{ batch.created_by.username }}</p>
+    <p>Généré par: {{ batch.created_by.userprofile.firstName }}</p>
 
     <hr>
 
@@ -80,6 +80,7 @@
         <thead>
             <tr>
                 <th>Cmd</th>
+                <th>Client</th>
                 <th>Vêt</th>
                 <th>Service</th>
                 <th>Couleur</th>
@@ -92,6 +93,7 @@
             {% for item in batch.items.all %}
                 <tr>
                     <td>N {{ item.order.id }}</td>
+                    <td>N {{ item.order.client.firstName }}</td>
                     <td>{{ item.item_type.name }}</td>
                     <td>{{ item.service.name }}</td>
                     <td>{{ item.color }}</td>

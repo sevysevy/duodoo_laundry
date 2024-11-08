@@ -41,22 +41,22 @@
     </table>
 
     <div class="pagination">
-        {% if item_type.has_previous %}
+        {% if pricelist.has_previous %}
             <a href="?page=1" class="pagination-link first">&laquo; Premiere page</a>
-            <a href="?page={{ item_type.previous_page_number }}" class="pagination-link prev">Precedent</a>
+            <a href="?page={{ pricelist.previous_page_number }}" class="pagination-link prev">Precedent</a>
         {% endif %}
     
-        {% for num in item_type.paginator.page_range %}
-            {% if item_type.number == num %}
+        {% for num in pricelist.paginator.page_range %}
+            {% if pricelist.number == num %}
                 <span class="pagination-link active">{{ num }}</span>
-            {% elif num > item_type.number|add:-3 and num < item_type.number|add:3 %}
+            {% elif num > pricelist.number|add:-3 and num < pricelist.number|add:3 %}
                 <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
             {% endif %}
         {% endfor %}
     
-        {% if item_type.has_next %}
-            <a href="?page={{ item_type.next_page_number }}" class="pagination-link next">Suivant</a>
-            <a href="?page={{ item_type.paginator.num_pages }}" class="pagination-link last">Derniere page &raquo;</a>
+        {% if pricelist.has_next %}
+            <a href="?page={{ pricelist.next_page_number }}" class="pagination-link next">Suivant</a>
+            <a href="?page={{ pricelist.paginator.num_pages }}" class="pagination-link last">Derniere page &raquo;</a>
         {% endif %}
     </div>
 {% endblock %}

@@ -1,0 +1,88 @@
+.table-actions {
+    display: flex;
+    gap: 5px; /* Space between buttons */
+    flex-wrap: wrap; /* Allows buttons to wrap if they don’t fit in one row */
+    align-items: center;
+    justify-content: center;
+}
+
+.table-actions a {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: separate; /* Separate borders for more control */
+    border-spacing: 0;
+    background-color: #FFFFFF; /* White background for a clean look */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Light shadow */
+    margin: 20px 0;
+    border-radius: 8px; /* Rounded corners */
+    overflow: hidden; /* Prevents overflow for rounded corners */
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+table th {
+    background-color: #F3F4F6; /* Light gray for header background */
+    color: #1E3A8A; /* Dark blue text for readability */
+    padding: 15px;
+    font-weight: bold;
+    text-align: left;
+    border-bottom: 2px solid #CBD5E0; /* Bottom border for header separation */
+}
+
+table td {
+    padding: 15px;
+    color: #333333; /* Dark text for readability */
+    border-bottom: 1px solid #E2E8F0; /* Light gray divider between rows */
+}
+
+table tr:nth-child(even) {
+    background-color: #F9FAFB; /* Very light gray for alternate rows */
+}
+
+/* Hover Effect on Table Rows */
+table tr:hover {
+    background-color: #E0E7FF; /* Light blue hover effect for interactivity */
+}
+
+/* Style for First and Last Column (Optional) */
+table td:first-child {
+    font-weight: bold;
+    color: #1E3A8A; /* Highlight first column (optional) */
+}
+
+table td:last-child {
+    text-align: right; /* Right-align last column if needed */
+}
+
+
+@media (max-width: 768px) {
+    .table-actions {
+        flex-direction: column; /* Stack buttons vertically on small screens */
+        gap: 8px;
+    }
+}
+
+
+
+
+/* Responsive styling for smaller screens */
+@media (max-width: 768px) {
+    /* Stack table rows on smaller screens */
+    .table-responsive {
+        overflow-x: auto;
+    }
+}

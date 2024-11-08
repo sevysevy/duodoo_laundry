@@ -1,17 +1,115 @@
-import pandas as pd
+import csv
 from django.core.management.base import BaseCommand
+from FinanceManagement.models import ExpenseCategory
 from ServiceManagement.models import Service, ItemCategory, ItemType, ItemCharacteristic, PriceList
 from django.utils import timezone
+from django.contrib.auth.models import User
+
+from UserManagement.models import Agency, Role, UserProfile
 
 # Replace with the path to your structured data file or adjust the logic to parse an in-memory object if available.
-data_path = 'C:/Users/ngahs/Desktop/Liste_grille_tarifaire_pressing.xlsx'
+data_path = 'E:\Projects\duodoo_laundry\ServiceManagement\management\commands\Liste_grille_tarifaire_pressing.csv'
 
 class Command(BaseCommand):
     help = "Inserts pricing data from an Excel file into the database."
 
     def handle(self, *args, **kwargs):
+
+        data_role = [
+                {"name":"Administrateur" ,"desc_role":"Ce type de compte donne un accès totale a la plateforme.", "name_code":"admin" },
+                {"name":"Responsable" , "desc_role":"Ce type de compte est réservé aux responsables d’organisation de la société civile", "name_code":"responsable"},
+                {"name":"Customer" , "desc_role":"Ce type de compte est réservé aux clients", "name_code":"costumer"},
+                
+                ]
+        
+        user_data = {
+            "password" : "123456789",
+            "firstName" : "Vanessa",
+            "lastName"  : "Atangana",
+            "phone" : "+237 690 92 27 47",
+            "email" : "vanessa@gmail.com"
+        }
+
+        agency = {
+            "name" : "Obam - Repos du Chef",
+            "adress" : "Repos du Chef",
+            "email"  : "info@crystalpressing.com",
+            "phone" : "+237 690 92 27 47"
+        }
+
+        depense = [
+            "Facture Eau" , "Facture Electricite" , "Transport" , "Achat Divers" , "Autres"
+        ]
+
+
+        for elm in depense:
+            print(elm)
+            ExpenseCategory.objects.create(name = elm)
+
+        for rle in data_role:
+            print(rle)
+            role = Role.objects.create(name = rle["name"]  , name_code = rle["name_code"]  , desc_role = rle["desc_role"])
+
+        agency = Agency.objects.create( name = agency["name"] , address = agency['adress'] , email = agency['email']  , phone = agency["phone"])
+
+
+        user = User(
+                username=user_data['email'],
+                email=user_data['email'],
+                first_name=user_data['firstName'],
+                last_name=user_data['lastName']
+            )
+        user.set_password(user_data['password'])
+        user.save()
+
+            # Save the UserProfile and link it to the User
+        profile = UserProfile(
+                username=user_data['email'],
+                email=user_data['email'],
+                firstName=user_data['firstName'],
+                lastName=user_data['lastName']
+            )
+        profile.user = user
+        profile.role = Role.objects.get(name_code = "responsable")
+        profile.save()
+
+
         # Load the Excel file
-        excel_data = pd.ExcelFile(data_path)
+        with open(data_path, mode='r' , encoding='utf-8') as file:
+            csv_reader = csv.reader(file , delimiter=';')
+            next(csv_reader)
+            for row in csv_reader:
+                cat = row[1]
+                v_type = row[0]
+                caract = row[2]
+                serv = row[3]
+                price = row[4]
+
+                service = Service.objects.get_or_create(name=serv)
+
+        # Insert data into ItemCategory model
+                cate = ItemCategory.objects.get_or_create(name=cat)
+
+                typ = ItemType.objects.get_or_create(name=v_type, category=cate)
+
+                car = ItemCharacteristic.objects.get_or_create(name=caract)
+
+                PriceList.objects.get_or_create(
+                    service=service,
+                    item_type=typ,
+                    item_characteristic=caract,
+                    defaults={
+                        "price": price,
+                        "active": True,
+                        "created_at": timezone.now(),
+                        "updated_at": timezone.now()
+                    }
+                )
+
+
+                print(row)
+
+        """ excel_data = pd.ExcelFile(data_path)
         data_sheet2 = excel_data.parse('Grille tarifaire')
 
         # Rename columns as per earlier parsing instructions
@@ -81,4 +179,4 @@ class Command(BaseCommand):
                 }
             )
 
-        self.stdout.write(self.style.SUCCESS("Pricing data inserted successfully."))
+        self.stdout.write(self.style.SUCCESS("Pricing data inserted successfully.")) """

@@ -5,6 +5,7 @@ from django.contrib import messages
 from .models import ItemCategory, PriceList, Service , ItemType , ItemCharacteristic
 from .forms import ItemCategoryForm, PriceListForm, ServiceForm , ItemTypeForm , ItemCharacteristicForm
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
 
 def service_list(request):
     services = Service.objects.all()

@@ -1,6 +1,6 @@
 # forms.py
 from django import forms
-from .models import Role, UserProfile
+from .models import Role, UserProfile , Agency
 
 class RoleForm(forms.ModelForm):
     class Meta:
@@ -24,3 +24,9 @@ class UserProfileForm(forms.ModelForm):
             'phone': 'Numéro de téléphone',  # Custom label for 'phone' field
             'role': 'Rôle',             # Custom label for 'role' field
         }
+
+
+class AgencyForm(forms.ModelForm):
+    class Meta:
+        model = Agency
+        fields = ['name', 'address', 'phone', 'email', 'manager']

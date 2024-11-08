@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Liste des Sessions de Vente{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Liste des Sessions de Vente</h2>
+
+<div style="text-align: right; margin-bottom: 10px;">
+    <a href="{% url 'open_sale_session' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Ouvrir une Nouvelle Session
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Sessions de Vente</h5>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Session #</th>
+                    <th>Utilisateur</th>
+                    <th>Date de Début</th>
+                    <th>Date de Fin</th>
+                    <th>Statut</th>
+                    <th>Total Ventes</th>
+                    <th>Total Paiements</th>
+                    <th>Total Dépenses</th>
+                    <th>Caisse a l'ouverture</th>
+                    <th>Caisse a la fermeture</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in page_obj %}
+                    <tr>
+                        <td>{{ session.id }}</td>
+                        <td>{{ session.user.email }}</td>
+                        <td>{{ session.start_time|date:"d/m/Y H:i" }}</td>
+                        <td>{{ session.end_time|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if session.status == 'open' %}
+                                <span class="badge bg-success">Ouverte</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Fermée</span>
+                            {% endif %}
+                        </td>
+                        {% if session.status == 'open' %}
+                            <td>{{ session.calculate_total_sales }} Fcfa</td>
+                            <td>{{ session.calculate_total_payments }} Fcfa</td>
+                            <td>{{ session.calculate_total_expenses}} Fcfa</td>
+                            <td>{{ session.opening_fund}} Fcfa</td>
+                            <td>{{ session.calculate_closing_fund}} Fcfa</td>
+                        {% else %}
+                            <td>{{ session.calculate_total_sales }} Fcfa</td>
+                            <td>{{ session.calculate_total_payments }} Fcfa</td>
+                            <td>{{ session.calculate_total_expenses}} Fcfa</td>
+                            <td>{{ session.opening_fund}} Fcfa</td>
+                            <td>{{ session.closing_fund}} Fcfa</td>
+                        {% endif %}
+                        <td>
+                            {% if session.status == 'open' %}
+                                <a href="{% url 'close_sale_session' session.id %}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-times"></i> Fermer
+                                </a>
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-3">Aucune session trouvée.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination Controls -->
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1" class="pagination-link first">&laquo; Première page</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="pagination-link prev">Précédent</a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="pagination-link active">{{ num }}</span>
+                {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+                    <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="pagination-link next">Suivant</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-link last">Dernière page &raquo;</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

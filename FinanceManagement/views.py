@@ -1,10 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from django.urls import reverse_lazy
-
+from django.utils import timezone
+from Core.models import SaleSession
 from UserManagement.models import UserProfile
 from .models import Expense, ExpenseCategory
 from django.http import HttpResponseRedirect
+
 
 
 class ExpenseCategoryListView(View):
@@ -118,13 +120,21 @@ class ExpenseCreateView(View):
         # Save the new expense
         category = get_object_or_404(ExpenseCategory, pk=category_id)
         partner = UserProfile.objects.get(pk=partner_id) if partner_id else None
-        Expense.objects.create(
+        today = timezone.now().date()
+        session = SaleSession.objects.filter(
+            status='open',
+            start_time__date=today
+        ).first()
+        expense = Expense.objects.create(
             category=category,
             description=description,
             amount=amount,
             date=date,
-            partner=partner
+            partner=partner,
+            session = session
         )
+
+        expense.confirm()
         return redirect('expense_list')
 
 
@@ -169,10 +179,12 @@ class ExpenseUpdateView(View):
 
         # Update the expense
         category = get_object_or_404(ExpenseCategory, pk=category_id)
+        partner = UserProfile.objects.get(pk=partner_id) if partner_id else None
         expense.category = category
         expense.description = description
         expense.amount = amount
         expense.date = date
+        expense.partner = partner
         expense.save()
         return redirect('expense_list')
 

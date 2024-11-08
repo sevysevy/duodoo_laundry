@@ -55,3 +55,15 @@ class UserProfile(models.Model):
         # Set fullName based on firstName and lastName before saving
         self.fullName = f"{self.firstName} {self.lastName}".strip()
         super(UserProfile, self).save(*args, **kwargs)
+
+
+
+class Agency(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    address = models.TextField()
+    phone = models.CharField(max_length=20)
+    email = models.EmailField(blank=True, null=True)
+    manager = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return self.name

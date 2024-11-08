@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import render
 from django.db.models import Prefetch
 from django.urls import reverse 
+from Core.models import SaleSession
 from ServiceManagement.models import ItemCategory, PriceList, Service
 from UserManagement.models import Role, UserProfile
 from .models import ItemType, ItemCharacteristic, Order
@@ -16,8 +17,10 @@ from django.http import JsonResponse
 from .models import *
 from .forms import *
 from django.utils.crypto import get_random_string
+from datetime import timedelta
+from django.contrib.auth.decorators import login_required
 
-
+@login_required
 def order_create(request):
     categories = ItemCategory.objects.prefetch_related(
         Prefetch(
@@ -31,6 +34,11 @@ def order_create(request):
 
     anormalies =  OrderLineItem._meta.get_field('anormaly').choices
     
+    today = timezone.now().date()
+    session = SaleSession.objects.filter(
+        status='open',
+        start_time__date=today
+    ).first()
 
     if request.method == "POST":
         print(request.POST)  # Check form data in the console for debugging
@@ -75,13 +83,15 @@ def order_create(request):
                 client_id=client_id,
                 total=order_total,  # Set total with calculated value
                 status = 'draft',
-                delivery_date = delivery_date
+                delivery_date = delivery_date,
+                session = session
             )
         else:
             order = Order.objects.create(
                 client_id=client_id,
                 total=order_total,  # Set total with calculated value
                 status = 'draft',
+                session = session
             )
 
         order.update_balance()
@@ -105,9 +115,11 @@ def order_create(request):
     return render(request, 'order_form.html', {
         'categories': categories,
         'characteristics': characteristics,
-        'anormalies':anormalies
+        'anormalies':anormalies,
+        'delivery_date': (today  + timedelta(days=2)).strftime('%d/%m/%Y')
     })
 
+@login_required
 def order_delete(request, pk):
     order = Order.objects.get(id=pk)
     
@@ -121,7 +133,7 @@ def order_delete(request, pk):
         return redirect('order_list')
     return render(request, 'order_confirm_delete.html', {'order': order})
 
-
+@login_required
 def order_update(request, pk):
 
     order = get_object_or_404(Order, id=pk)
@@ -227,7 +239,6 @@ def order_update(request, pk):
     })
 
 
-
 def get_customers(request):
     # Filter clients by role name_code 'customer'
     customer_role = Role.objects.get(name="Customer")
@@ -236,7 +247,6 @@ def get_customers(request):
     # Format data as JSON
     data = [{"id": customer.id, "name": f"{customer.title} {customer.firstName} {customer.lastName} ( {customer.quartier} )"} for customer in customers]
     return JsonResponse(data, safe=False)
-
 
 def get_item_types(request):
     # Fetch categories and item types in JSON format
@@ -337,6 +347,11 @@ def get_sevice_for_item_type(request):
 def order_list(request):
     # Fetch all orders from the database, optionally filter or sort as needed
     orders = Order.objects.all().order_by('-created_at')  # Adjust ordering as needed
+    status = request.GET.get('status')
+
+    if status:
+        orders = Order.objects.filter(status = status).order_by('-created_at')  # Adjust ordering as needed
+
 
     # Paginate the orders to limit the number displayed per page
     paginator = Paginator(orders, 10)  # Show 10 orders per page
@@ -349,7 +364,7 @@ def order_list(request):
     return render(request, 'order_list.html', context)
 
 
-
+@login_required
 def order_detail(request, pk):
     # Fetch the order and related items
     order = get_object_or_404(Order, pk=pk)
@@ -373,15 +388,21 @@ def order_detail(request, pk):
 
 
 
-
+@login_required
 def register_payment(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
+    today = timezone.now().date()
+    session = SaleSession.objects.filter(
+        status='open',
+        start_time__date=today
+    ).first()
 
     if request.method == 'POST':
         form = PaymentForm(request.POST)
         if form.is_valid():
             payment = form.save(commit=False)
             payment.order = order
+            payment.session = session
             payment.save()  # This will automatically update the order balance
             return JsonResponse({"result": "success", "balance": order.balance})
         else:
@@ -494,14 +515,17 @@ def mark_items_as_delivered(request):
     item_ids = request.POST.getlist('order_item_ids[]')
     
     # Update the status of selected items to 'delivered'
-    items = OrderLineItem.objects.filter(id__in=item_ids, status__in=['pending', 'production', 'completed'])
+    items = OrderLineItem.objects.filter(id__in=item_ids)
+    orders_to_update = [item.order for item in items]  # Get unique orders for the updated items
+
+    for order in orders_to_update:
+        if order.balance != 0:
+            return JsonResponse({"result":"error" , "errors":"Impossible de livrer des vetements la facture n'est pas completement paye"})
+
+        order.update_status()
+
     items.update(status='delivered')
     
-    items_ = OrderLineItem.objects.filter(id__in=item_ids, status__in=['delivered'])
-    # Update the status of each associated order
-    orders_to_update = {item.order for item in items_}  # Get unique orders for the updated items
-    for order in orders_to_update:
-        order.update_status()  # Ensure order status is updated
 
     return JsonResponse({"result": "success"})
 
