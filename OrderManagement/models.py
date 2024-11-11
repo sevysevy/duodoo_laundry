@@ -2,9 +2,9 @@ from django.db import models
 from django.urls import reverse
 
 from ServiceManagement.models import ItemCharacteristic, ItemType, Service
-from UserManagement.models import UserProfile
+from UserManagement.models import Agency, UserProfile
 from decimal import Decimal
-
+from django.utils.text import slugify
 from django.utils import timezone
 from datetime import timedelta
 
@@ -17,12 +17,34 @@ class Batch(models.Model):
         ('completed', 'Completed')
     ]
     
-    batch_id = models.CharField(max_length=20, unique=True)
+    batch_id = models.CharField(max_length=255, null=True, editable=False)
+    agency = models.ForeignKey(Agency, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=BATCH_STATUS_CHOICES, default="in_production")
     name = models.CharField(max_length=100, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.batch_id:
+            # Generate the first four characters of the agency name
+            prefix="PROD"
+            if self.agency:
+                prefix = f"PROD-{slugify(self.agency.name)[:4].upper()}"
+            
+            # Get the latest order for this agency and increment the numeric part
+            last_batch = Batch.objects.all().order_by('-id').first()
+            if last_batch and last_batch.batch_id and last_batch.batch_id.startswith(prefix):
+                # Extract the numeric part and increment it
+                last_number = int(last_batch.batch_id.split('-')[-1])
+                new_number = f"{last_number + 1:04}"  # Format as a 4-digit number with leading zeros
+            else:
+                new_number = "0001"  # Start from 0001 if no previous order exists
+            
+            # Set the order_id with prefix and new incremental number
+            self.batch_id = f"{prefix}-{new_number}"
+        
+        super().save(*args, **kwargs)
 
     def add_items_to_batch(self, order_item_ids):
         """
@@ -78,7 +100,8 @@ class Order(models.Model):
     ]
 
 
-    
+    order_id = models.CharField(max_length=255, null=True, editable=False)
+    agency = models.ForeignKey(Agency, on_delete=models.SET_NULL, null=True, blank=True)
     client = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=50, choices=ORDER_STATUS_CHOICES, default="draft")
@@ -89,6 +112,29 @@ class Order(models.Model):
     total = models.IntegerField()
     balance = models.IntegerField(null=True)
     delivery_date = models.DateField(null=True , default=default_two_days_later )
+
+
+
+    def save(self, *args, **kwargs):
+        if not self.order_id:
+            # Generate the first four characters of the agency name
+            prefix="CMD"
+            if self.agency:
+                prefix = slugify(self.agency.name)[:4].upper()
+            
+            # Get the latest order for this agency and increment the numeric part
+            last_order = Order.objects.all().order_by('-id').first()
+            if last_order and last_order.order_id and last_order.order_id.startswith(prefix):
+                # Extract the numeric part and increment it
+                last_number = int(last_order.order_id.split('-')[-1])
+                new_number = f"{last_number + 1:04}"  # Format as a 4-digit number with leading zeros
+            else:
+                new_number = "0001"  # Start from 0001 if no previous order exists
+            
+            # Set the order_id with prefix and new incremental number
+            self.order_id = f"{prefix}-{new_number}"
+        
+        super().save(*args, **kwargs)
 
 
     def amount_paid(self):

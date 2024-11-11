@@ -22,7 +22,7 @@
         </button>
     </div>
 
-    <div id="errorMessage" class="text-danger mt-2" style="display: none;"></div>
+    <div id="errorMessage" class="text-danger mt-2 errorMessage" style="display: none;"></div>
 
     <div class="card mb-4 shadow-sm border-0">
         <div class="card-header bg-primary text-white">
@@ -91,7 +91,7 @@
                 <div class="row mb-3">
                     <!-- Payment Method -->
                     <div class="col-md-6">
-                        <label for="paymentMethod" class="form-label fw-bold">Méthode de Paiement</label>
+                        <label for="paymentMethod" class="form-label fw-bold">Méthode de Paiement</label><br>
                         <select id="paymentMethod" name="paymentMethod" class="form-select" required>
                             <option value="">Sélectionner la Méthode</option>
                             <option value="cash">Espèces</option>
@@ -109,6 +109,8 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="errorMessage" class="text-danger mt-2 errorMessage" style="display: none;"></div>
                 
             </div>
             
@@ -201,6 +203,9 @@
             </div>
             <div class="modal-body">
                 <p>Êtes-vous sûr de vouloir continuer ? Voulez vous confirmer cette commande sans paiement ?</p>
+                <p>
+                    Ou veuillez verifier la methode de paiement.
+                </p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -219,7 +224,7 @@
                 <option value="">Choisir</option>
                 {% for category in categories %}
                     <optgroup label="{{ category.name }}">
-                        {% for item_type in category.item_types.all %}
+                        {% for item_type in category.item_types.all|dictsort:"name" %}
                             <option value="{{ item_type.id }}">{{ item_type.name }}</option>
                         {% endfor %}
                     </optgroup>
@@ -367,7 +372,7 @@
     function validateAndsimpleSubmitOrder(confirm , bypass){
         const client = $('#client').val();
         const orderItems = $('#orderItemsBody tr'); // Get all item rows
-        const errorMessage = $('#errorMessage');
+        const errorMessage = $('.errorMessage');
         const initialPayment = parseFloat($('#initialPayment').val()) || 0; // Get initial payment amount
         const paymentMethod = $('#paymentMethod').val();
         const delivery_date = $("#delivery-date").val()
@@ -450,6 +455,12 @@
 
             }
 
+            else if (initialPayment < 0){
+                alert("Le montant du paiement ne peut etre negatif.")
+                errorMessage.text("Le montant du paiement ne peut etre negatif.").show();
+                return;
+            }
+
             else if (!paymentMethod) {
                 $('#warningModal').modal('show');
                 errorMessage.text("Veuillez sélectionner une méthode de paiement.").show();
@@ -463,14 +474,19 @@
             url: "{% url 'order_create' %}",  // Replace with the actual URL or URL name for your view
             type: "POST",
             data: orderData ,
-            success: function(response) {
+            success: async function(response) {
                 if(confirm){
-                    printReceipt(response.receipt).then(()=>{
-                        window.location.href = "{% url 'order_list' %}"}
+                    await printReceipt(response.receipt).then(()=>{
+                        setTimeout(()=> {
+                            window.location.href = "{% url 'order_list' %}"
+                        } , 2000)}
                     )
                 }
+                else{
+                    window.location.href = "{% url 'order_list' %}"
+                }
 
-                window.location.href = "{% url 'order_list' %}"
+                
                 
                     //alert("Commande enregistrée avec succès !");
 
@@ -535,20 +551,18 @@ function submitNewClient() {
     function printReceipt(url) {
         return new Promise((resolve, reject) => {
             // Your printing logic here
-            try {
+            
                 const windowFeatures = "width=80,height=297,resizable=no,scrollbars=yes";
                     const printWindow = window.open(url, windowFeatures, '_blank');
-                    printWindow.onload = function() {
+                    printWindow.onload = async function() {
                         
-                        printWindow.print();
+                        await printWindow.print();
                         printWindow.close();
                         
                         
                     };
                 resolve(); // Resolve the promise if successful
-            } catch (error) {
-                reject(error); // Reject the promise if there's an error
-            }
+          
         });
     }
 

@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from UserManagement.models import Agency, Role, UserProfile
 
 # Replace with the path to your structured data file or adjust the logic to parse an in-memory object if available.
-data_path = 'E:\Projects\duodoo_laundry\ServiceManagement\management\commands\Liste_grille_tarifaire_pressing.csv'
+data_path = 'E:\Projects\duodoo_laundry\ServiceManagement\management\commands\Liste_grille_tarifaire_pressing_1.csv'
 
 class Command(BaseCommand):
     help = "Inserts pricing data from an Excel file into the database."
@@ -24,17 +24,17 @@ class Command(BaseCommand):
         
         user_data = {
             "password" : "123456789",
-            "firstName" : "Vanessa",
-            "lastName"  : "Atangana",
-            "phone" : "+237 690 92 27 47",
-            "email" : "vanessa@gmail.com"
+            "firstName" : "Yves",
+            "lastName"  : "Admin",
+            "phone" : "+237 656 431 945",
+            "email" : "ngahsevy@gmail.com"
         }
 
         agency = {
-            "name" : "Obam - Repos du Chef",
-            "adress" : "Repos du Chef",
+            "name" : "Messamendongo",
+            "adress" : "Messamendongo",
             "email"  : "info@crystalpressing.com",
-            "phone" : "+237 690 92 27 47"
+            "phone" : "+237 695 13 77 10"
         }
 
         depense = [
@@ -64,7 +64,6 @@ class Command(BaseCommand):
 
             # Save the UserProfile and link it to the User
         profile = UserProfile(
-                username=user_data['email'],
                 email=user_data['email'],
                 firstName=user_data['firstName'],
                 lastName=user_data['lastName']
@@ -73,31 +72,45 @@ class Command(BaseCommand):
         profile.role = Role.objects.get(name_code = "responsable")
         profile.save()
 
-
+        serve_exp , _ = Service.objects.get_or_create(name="Express")
         # Load the Excel file
         with open(data_path, mode='r' , encoding='utf-8') as file:
             csv_reader = csv.reader(file , delimiter=';')
             next(csv_reader)
             for row in csv_reader:
+                print(row)
                 cat = row[1]
                 v_type = row[0]
                 caract = row[2]
                 serv = row[3]
                 price = row[4]
+                ex_price = row[5]
 
-                service = Service.objects.get_or_create(name=serv)
+                service , _ = Service.objects.get_or_create(name=serv)
 
         # Insert data into ItemCategory model
-                cate = ItemCategory.objects.get_or_create(name=cat)
+                cate , _ = ItemCategory.objects.get_or_create(name=cat)
 
-                typ = ItemType.objects.get_or_create(name=v_type, category=cate)
+                typ , _= ItemType.objects.get_or_create(name=v_type, category=cate)
 
-                car = ItemCharacteristic.objects.get_or_create(name=caract)
+                car , _= ItemCharacteristic.objects.get_or_create(name=caract)
+
+                PriceList.objects.get_or_create(
+                    service=serve_exp,
+                    item_type=typ,
+                    item_characteristic=car,
+                    defaults={
+                        "price": ex_price,
+                        "active": True,
+                        "created_at": timezone.now(),
+                        "updated_at": timezone.now()
+                    }
+                )
 
                 PriceList.objects.get_or_create(
                     service=service,
                     item_type=typ,
-                    item_characteristic=caract,
+                    item_characteristic=car,
                     defaults={
                         "price": price,
                         "active": True,
@@ -107,76 +120,4 @@ class Command(BaseCommand):
                 )
 
 
-                print(row)
-
-        """ excel_data = pd.ExcelFile(data_path)
-        data_sheet2 = excel_data.parse('Grille tarifaire')
-
-        # Rename columns as per earlier parsing instructions
-        data_sheet2.rename(columns={'Catégorie': 'Type de vêtements', 'Type de vêtements': 'Catégorie'}, inplace=True)
-
-        # Set to store unique entries for each model
-        services = set()
-        item_categories = set()
-        item_types = set()
-        item_characteristics = set()
-        price_list_entries = []
-
-        # Parse the data for each unique value
-        for index, row in data_sheet2.iterrows():
-            print(row)
-            category_name = row['Catégorie']
-            item_type_name = row['Type de vêtements']
-            characteristic_name = row['Caractéristiques']
-            service_name = row['Service']
-            price = row['P.U']
-
-            services.add(service_name)
-            item_categories.add(category_name)
-            item_types.add((item_type_name, category_name))
-            item_characteristics.add(characteristic_name)
-            price_list_entries.append({
-                "service": service_name,
-                "item_type": item_type_name,
-                "item_category": category_name,
-                "item_characteristic": characteristic_name,
-                "price": price
-            })
-
-        # Insert data into Service model
-        for service_name in services:
-            Service.objects.get_or_create(name=service_name)
-
-        # Insert data into ItemCategory model
-        for category_name in item_categories:
-            ItemCategory.objects.get_or_create(name=category_name)
-
-        # Insert data into ItemType model
-        for item_type_name, category_name in item_types:
-            category = ItemCategory.objects.get(name=category_name)
-            ItemType.objects.get_or_create(name=item_type_name, category=category)
-
-        # Insert data into ItemCharacteristic model
-        for characteristic_name in item_characteristics:
-            ItemCharacteristic.objects.get_or_create(name=characteristic_name)
-
-        # Insert data into PriceList model
-        for entry in price_list_entries:
-            service = Service.objects.get(name=entry["service"])
-            item_type = ItemType.objects.get(name=entry["item_type"], category__name=entry["item_category"])
-            item_characteristic = ItemCharacteristic.objects.get(name=entry["item_characteristic"])
-            
-            # Insert price list entry with unique combination
-            PriceList.objects.get_or_create(
-                service=service,
-                item_type=item_type,
-                item_characteristic=item_characteristic,
-                defaults={
-                    "price": entry["price"],
-                    "active": True,
-                    "created_at": timezone.now(),
-                    "updated_at": timezone.now()
-                }
-            )
-
-        self.stdout.write(self.style.SUCCESS("Pricing data inserted successfully.")) """
+                

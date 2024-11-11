@@ -31,6 +31,7 @@ def order_create(request):
         )
     )
     characteristics = ItemCharacteristic.objects.all()
+    agency = Agency.objects.last()
 
     anormalies =  OrderLineItem._meta.get_field('anormaly').choices
     
@@ -77,40 +78,43 @@ def order_create(request):
             # Add line total to the overall order total
             order_total += line_total
 
-        # Create Order with calculated total
-        if delivery_date:
-            order = Order.objects.create(
-                client_id=client_id,
-                total=order_total,  # Set total with calculated value
-                status = 'draft',
-                delivery_date = delivery_date,
-                session = session
-            )
-        else:
-            order = Order.objects.create(
-                client_id=client_id,
-                total=order_total,  # Set total with calculated value
-                status = 'draft',
-                session = session
-            )
+        if agency:
+            # Create Order with calculated total
+            if delivery_date:
+                order = Order.objects.create(
+                    client_id=client_id,
+                    total=order_total,  # Set total with calculated value
+                    status = 'draft',
+                    delivery_date = delivery_date,
+                    session = session,
+                    agency = agency
+                )
+            else:
+                order = Order.objects.create(
+                    client_id=client_id,
+                    total=order_total,  # Set total with calculated value
+                    status = 'draft',
+                    session = session,
+                    agency = agency
+                )
 
-        order.update_balance()
+            order.update_balance()
 
-        if payment != 0 and payment_method != '':
+            if payment != 0 and payment_method != '':
 
-            payment = Payment.objects.create(order=order , amount = payment , payment_method = payment_method)
-        
-        # Add each item to the order
-        for item in items:
-            order.add_item(item)  # Assuming order.add_item handles creating OrderItem entries
+                payment = Payment.objects.create(order=order , amount = payment , payment_method = payment_method)
+            
+            # Add each item to the order
+            for item in items:
+                order.add_item(item)  # Assuming order.add_item handles creating OrderItem entries
 
-        
-        if confirm:
-            order.confirm_order()
+            
+            if confirm:
+                order.confirm_order()
 
-        receipt_url = reverse(order_receipt , args=[order.id])
+            receipt_url = reverse(order_receipt , args=[order.id])
 
-        return JsonResponse({"result": "success", "order_total": order_total , "receipt":receipt_url})
+            return JsonResponse({"result": "success", "order_total": order_total , "receipt":receipt_url})
 
     return render(request, 'order_form.html', {
         'categories': categories,
@@ -414,16 +418,19 @@ def register_payment(request, order_id):
     return render(request, 'register_payment.html', {'order': order, 'form': form})
 
 
-def create_batch(request, order_id):
+def create_batch(request):
+    agency = Agency.objects.last()
     if request.method == "POST":
         item_ids = request.POST.getlist('order_items[]')
         
         if not item_ids:
             return JsonResponse({"result": "error", "errors": "Pas de vetement selectionner"}, status=400)
         
-        # Generate a unique batch ID (e.g., 8-character random string)
-        batch_id = "PROD-" + get_random_string(5 , "1234567890")
-        new_batch = Batch.objects.create(batch_id=batch_id)
+        if not agency :
+            return JsonResponse({"result": "error", "errors": "Veuillez configurer votre agence."}, status=403)
+            
+
+        new_batch = Batch.objects.create( agency = agency)
 
         new_batch.add_items_to_batch(item_ids)
 
@@ -433,6 +440,7 @@ def create_batch(request, order_id):
     
 
 def create_batch_multy(request):
+    agency = Agency.objects.last()
     if request.method == "POST":
         print(request.POST)
         count = request.POST.get("count")
@@ -440,13 +448,15 @@ def create_batch_multy(request):
         if int(count) == 0:
             return JsonResponse({"result": "error", "errors": "Pas de vetement selectionner"}, status=400)
         
-        batch_id = "PROD-" + get_random_string(5 , "1234567890")
-        new_batch = Batch.objects.create(batch_id=batch_id)
+        if not agency :
+            return JsonResponse({"result": "error", "errors": "Veuillez configurer votre agence."}, status=403)
+        
+        
+        new_batch = Batch.objects.create(agency = agency)
         items = []
 
         # Loop through each item and calculate line totals
         for n in range(0, int(count)):
-            order_id = request.POST.get(f"order_items[{n}][order_id]")
             item_id = request.POST.get(f"order_items[{n}][item_id]")
             print(item_id)
             items.append(item_id)

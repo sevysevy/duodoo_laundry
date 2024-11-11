@@ -124,6 +124,12 @@ def userprofile_list(request):
 
 
 @login_required
+# UserProfile views
+def customer_list(request):
+    profiles = UserProfile.objects.filter(role__name_code__in = ['costomer'])
+    return render(request, 'userprofil_list.html', {'profiles': profiles})
+
+@login_required
 def userprofile_create(request):
     if request.method == 'POST':
         form = UserProfileForm(request.POST)

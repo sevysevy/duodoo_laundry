@@ -17,6 +17,9 @@ urlpatterns = [
     path('profiles/delete/<int:pk>/', views.userprofile_delete, name='userprofile_delete'),
     path('profiles/<int:pk>/', views.userprofile_detail, name='userprofile_detail'),
 
+
+    path('customers/', views.customer_list, name='customer_list'),
+
     path('login', views.Login.as_view(redirect_authenticated_user = True) , name='login'),
     path('logout', views.custom_logout , name='logout'),
 

@@ -1,4 +1,6 @@
 from django.utils import timezone
+
+from UserManagement.models import Agency
 from .models import SaleSession
 
 def has_valid_sale_session():
@@ -9,3 +11,5 @@ def has_valid_sale_session():
     ).exists()
 
     return has_valid_session
+
+

@@ -1,6 +1,6 @@
 from django import forms
 from .models import Order, Payment
-
+from django.core.exceptions import ValidationError
 class PaymentForm(forms.ModelForm):
     class Meta:
         model = Payment
@@ -11,6 +11,15 @@ class PaymentForm(forms.ModelForm):
             'payment_method': 'Methode de paiement',
             'payment_date': 'Date de paiement',
         }
+
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        
+        if amount is not None and amount < 0:
+            raise ValidationError("Le montant ne peut pas être négatif.")
+        
+        return amount
 
 
 

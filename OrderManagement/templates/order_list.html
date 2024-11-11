@@ -21,7 +21,7 @@
             <table class="table table-hover mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th>Commande #</th>
+                        <th>Numero Commande</th>
                         <th>Client</th>
                         <th>Date de Commande</th>
                         <th>Status</th>
@@ -35,7 +35,7 @@
                 <tbody>
                     {% for order in orders %}
                         <tr>
-                            <td>{{ order.id }}</td>
+                            <td>{{ order.order_id }}</td>
                             <td>{{order.client.title}}.  {{ order.client.fullName }} <br> {{order.client.phone}} <br> Quartier: {{order.client.quartier}} </td>
                             <td>{{ order.created_at|date:"d/m/Y" }}</td>
                             <td>

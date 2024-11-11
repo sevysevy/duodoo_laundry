@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "Core",
     "OrderManagement",
-    "PaymentTracking",
     "ServiceManagement",
     "UserManagement",
     "FinanceManagement",

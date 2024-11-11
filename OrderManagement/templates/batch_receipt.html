@@ -66,8 +66,8 @@
     <div class="logo-div">
         <img class="logo" src="{% static 'images/logo.jpg' %}" />
     </div>
-    <p>Adresse: Obam - Repos du Chef</p>
-    <p>Téléphone: +237 690 92 27 47</p>
+    <p>Adresse: {{batch.agency.address}}</p>
+    <p>Téléphone: {{batch.agency.phone}} </p>
     <hr>
     <h3>Fiche Production {{ batch.batch_id }}</h3>
     <p>Date: {{ batch.created_at|date:"d/m/Y" }}</p>
@@ -80,10 +80,11 @@
         <thead>
             <tr>
                 <th>Cmd</th>
-                <th>Client</th>
+                <th>Cli</th>
                 <th>Vêt</th>
-                <th>Service</th>
-                <th>Couleur</th>
+                <th>Ser</th>
+                <th>Mar</th>
+                <th>Col</th>
                 <th>Anor</th>
                 <th>Rmq</th>
                 <th>Qte</th>
@@ -96,6 +97,7 @@
                     <td>N {{ item.order.client.firstName }}</td>
                     <td>{{ item.item_type.name }}</td>
                     <td>{{ item.service.name }}</td>
+                    <td>{{ item.brand }}</td>
                     <td>{{ item.color }}</td>
                     <td>{{ item.anormaly }}</td>
                     <td>{{ item.description }}</td>

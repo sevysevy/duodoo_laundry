@@ -233,8 +233,10 @@ $(document).ready(function() {
                 success: function(response) {
                     if (response.result === "success") {
                         printReceipt(response.receipt).then(()=>{
-                            window.location.href = "{% url 'batch_list' %}"}
-                        )
+                        setTimeout(()=> {
+                            window.location.href = "{% url 'batch_list' %}"
+                        } , 2000)}
+                    )
                     } else {
                         alert("Erreur: " + JSON.stringify(response.errors));
                     }

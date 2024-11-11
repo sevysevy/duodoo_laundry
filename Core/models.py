@@ -4,14 +4,15 @@ from datetime import date
 
 from FinanceManagement.models import Expense
 from OrderManagement.models import Order, Payment
-from UserManagement.models import UserProfile
+from UserManagement.models import Agency, UserProfile
 
 class SaleSession(models.Model):
     SESSION_STATUS = [
         ('open', 'Ouverte'),  # Open
         ('closed', 'Fermée'),  # Closed
     ]
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True)
+    agency  = models.ForeignKey(Agency, on_delete=models.SET_NULL, null=True, blank=True)
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=SESSION_STATUS, default='open')
@@ -60,11 +61,11 @@ class SaleSession(models.Model):
         """Calculate the total amount from expenses associated with this session."""
         return Expense.objects.filter(session=self).aggregate(total=models.Sum('amount'))['total'] or 0.00
 
-    @staticmethod
-    def check_open_session_for_user(user):
+    @classmethod
+    def check_open_session(cls):
         """Check if there's an open session for the user that needs closing."""
-        open_session = SaleSession.objects.filter(user=user.userprofile, status='open').first()
-        if open_session and open_session.start_time.date() < date.today():
+        open_session = SaleSession.objects.filter(status='open').first()
+        if open_session:
             # The session is from a previous day and needs to be closed
             return open_session
         return None

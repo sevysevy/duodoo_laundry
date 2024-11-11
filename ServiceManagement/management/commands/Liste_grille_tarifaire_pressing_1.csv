@@ -1,0 +1,105 @@
+﻿Type de vêtements;Catégorie;Caractéristiques;Service;P.U;Service express
+Chemise H/F;Vêtement adulte;Simple;Lavage et repassage;1000 ;2000
+Chemise H/F;Vêtement adulte;Délicat;Lavage et repassage;2000 ;4000
+Robe simple;Vêtement adulte;Simple;Lavage et repassage;2000 ;4000
+Robe petit plis;Vêtement adulte;Délicat;Lavage et repassage;3000 ;6000
+Robe plis laché;Vêtement adulte;Délicat;Lavage et repassage;3000 ;6000
+Robe délicate / Soirée;Vêtement adulte;Délicat;Lavage et repassage;5000 ;10000
+Robe de mariage;Vêtement adulte;Délicat;Lavage et repassage;25000 ;50000
+Jupe simple;Vêtement adulte;Simple;Lavage et repassage;2000 ;4000
+Jupe plisée;Vêtement adulte;Délicat;Lavage et repassage;3000 ;6000
+Jupe délicate;Vêtement adulte;Délicat;Lavage et repassage;4000 ;8000
+Pantalon H/F;Vêtement adulte;Simple;Lavage et repassage;1500 ;3000
+Pantalon H/F;Vêtement adulte;Délicat;Lavage et repassage;3500 ;7000
+Culotte H/F;Vêtement adulte;Simple;Lavage et repassage;1000 ;2000
+Culotte H/F;Vêtement adulte;Délicat;Lavage et repassage;1500 ;3000
+Veste vip;Vêtement adulte;Délicat;Lavage et repassage;5000 ;10000
+Costume 3 pieces;Vêtement adulte;Délicat;Lavage et repassage;10000 ;20000
+Costume 3 pieces;Vêtement adulte;Simple;Lavage et repassage;3500 ;7000
+Veste;Vêtement adulte;Simple;Lavage et repassage;1500 ;3000
+Costume H/F ;Vêtement adulte;Simple;Lavage et repassage;2500 ;5000
+Costume H/F VIP;Vêtement adulte;Délicat;Lavage et repassage;10000 ;20000
+Aube;Vêtement adulte;Simple;Lavage et repassage;3000 ;6000
+Soutane / Toge;Vêtement adulte;Simple;Lavage et repassage;3000 ;6000
+T-shirt;Vêtement adulte;Simple;Lavage et repassage;1000 ;2000
+Etole;Vêtement adulte;Simple;Lavage et repassage;1500 ;3000
+Ensemble simple H/F;Vêtement adulte;Simple;Lavage et repassage;3000 ;6000
+Ensemble traditionnelle H/F;Vêtement adulte;Délicat;Lavage et repassage;5000 ;10000
+Tunique;Vêtement adulte;Simple;Lavage et repassage;2000 ;4000
+Tunique;Vêtement adulte;Délicat;Lavage et repassage;3000 ;6000
+Basin 1P;Vêtement adulte;Délicat;Lavage et repassage;1000 ;2000
+Basin 2-3P;Vêtement adulte;Délicat;Lavage et repassage;3000 ;6000
+Boubou ;Vêtement adulte;Délicat;Lavage et repassage;2000 ;4000
+Boubou 2-3p;Vêtement adulte;Délicat;Lavage et repassage;5000 ;10000
+Blouse;Vêtement adulte;Simple;Lavage et repassage;2000 ;4000
+Chaussettes;Vêtement adulte;simple;Lavage et repassage;1000 ;2000
+Chaussures;Vêtement adulte;simple;Lavage et repassage;5000 ;10000
+Pantalon;Vêtement adulte;simple;Lavage et repassage;2000 ;4000
+Sous-vêtement;Vêtement adulte;Délicat;Lavage et repassage;1000 ;2000
+Bonnet enf;Vêtement enfant et layette;Simple;Lavage et repassage;500 ;1000
+Boubou enf;Vêtement enfant et layette;Délicat;Lavage et repassage;2000 ;4000
+Caleçon enf;Vêtement enfant et layette;Simple;Lavage et repassage;500 ;1000
+Chemise enf;Vêtement enfant et layette;Simple;Lavage et repassage;500 ;1000
+Chemise enf;Vêtement enfant et layette;Délicat;Lavage et repassage;1000 ;2000
+Combinaison enf;Vêtement enfant et layette;Simple;Lavage et repassage;1000 ;2000
+Culotte enf;Vêtement enfant et layette;Simple;Lavage et repassage;500 ;1000
+Costume enf;Vêtement enfant et layette;Délicat;Lavage et repassage;3000 ;6000
+Chapeau enf;Vêtement enfant et layette;Simple;Lavage et repassage;1000 ;2000
+Ceinture enf;Vêtement enfant et layette;Simple;Lavage et repassage;500 ;1000
+Chaussure enf;Vêtement enfant et layette;Délicat;Lavage et repassage;3000 ;6000
+Echarpe enf;Vêtement enfant et layette;Simple;Lavage et repassage;1000 ;2000
+Ensemble simple enf;Vêtement enfant et layette;Simple;Lavage et repassage;2000 ;4000
+Ensemple tunique enf;Vêtement enfant et layette;Délicat;Lavage et repassage;4000 ;8000
+Jogging enf;Vêtement enfant et layette;Simple;Lavage et repassage;2000 ;4000
+Jupe enf ;Vêtement enfant et layette;Simple;Lavage et repassage;1000 ;2000
+Pantalon enf;Vêtement enfant et layette;Simple;Lavage et repassage;1000 ;2000
+Polo enf;Vêtement enfant et layette;Simple;Lavage et repassage;1000 ;2000
+Pull over enf;Vêtement enfant et layette;Simple;Lavage et repassage;2000 ;4000
+Robe simple enf;Vêtement enfant et layette;Simple;Lavage et repassage;1000 ;2000
+Robe Delicate enf;Vêtement enfant et layette;Délicat;Lavage et repassage;5000 ;10000
+T-shirt enf;Vêtement enfant et layette;Simple;Lavage et repassage;5000 ;10000
+Peluche petit/grand enf;Vêtement enfant et layette;Délicat;Lavage et repassage;5000 ;10000
+Linge bébé 0-12 mois enf;Vêtement enfant et layette;Délicat;Lavage et repassage;1000 ;2000
+Alèse simple;Linge de chambre;Simple;Lavage et repassage;3000 ;6000
+Alèse 2-3P;Linge de chambre;Simple;Lavage et repassage;5000 ;10000
+Alèse de lit;Linge de chambre;Simple;Lavage et repassage;3000 ;6000
+Couette 1P;Linge de chambre;Simple;Lavage et repassage;3000 ;6000
+Couette 2-3P;Linge de chambre;Simple;Lavage et repassage;5000 ;10000
+Coussin petit;Linge de chambre;Simple;Lavage et repassage;1000 ;2000
+Coussin moyen;Linge de chambre;Simple;Lavage et repassage;2000 ;4000
+Coussin grand;Linge de chambre;Simple;Lavage et repassage;3000 ;6000
+Couverture 1P;Linge de chambre;Simple;Lavage et repassage;3000 ;6000
+Couverture 2-3P;Linge de chambre;Simple;Lavage et repassage;5000 ;10000
+Drap de lit 1P;Linge de chambre;Simple;Lavage et repassage;2000 ;4000
+Drap de lit 2-3P;Linge de chambre;Simple;Lavage et repassage;3000 ;6000
+Housse de chaise 1P;Linge de chambre;Simple;Lavage et repassage;1000 ;2000
+Housse de chaise 2-3P;Linge de chambre;Simple;Lavage et repassage;3000 ;6000
+Housse de matelat;Linge de chambre;Simple;Lavage et repassage;3000 ;6000
+Oreillers;Linge de chambre;Simple;Lavage et repassage;3000 ;6000
+Peignoir de bain;Linge de chambre;Simple;Lavage et repassage;2000 ;4000
+Serviette petite;Linge de chambre;Simple;Lavage et repassage;1000 ;2000
+Serviette grande;Linge de chambre;Simple;Lavage et repassage;2000 ;4000
+Taie d'oreiller;Linge de chambre;Simple;Lavage et repassage;2000 ;4000
+Tapis de bain;Linge de chambre;Simple;Lavage et repassage;1000 ;2000
+Chemin de lit / Traverse;Linge de chambre;Simple;Lavage et repassage;2000 ;4000
+Rideau;Linge de maison;Simple;Lavage et repassage;2000 ;4000
+Rideau voilage;Linge de maison;Délicat;Lavage et repassage;5000 ;10000
+Nappe;Linge de maison;Simple;Lavage et repassage;1000 ;2000
+Nappe;Linge de maison;Délicat;Lavage et repassage;2000 ;4000
+Housse;Linge de maison;Simple;Lavage et repassage;500 ;1000
+Serviette de table;Linge de maison;Simple;Lavage et repassage;1000 ;2000
+Tapis;Linge de maison;Simple;Lavage et repassage;15000 ;30000
+Torchon / Micro fibre;Linge de maison;Simple;Lavage et repassage;500 ;1000
+Chapeau H/F;Accessoires;Délicat;Lavage et repassage;3000 ;6000
+Ceinture H/F;Accessoires;Délicat;Lavage et repassage;2000 ;4000
+Chausette H/F;Accessoires;Simple;Lavage et repassage;500 ;1000
+Cravate;Accessoires;Délicat;Lavage et repassage;1000 ;2000
+Chaussure H/F;Accessoires;Délicat;Lavage et repassage;5000 ;10000
+Drapeau;Accessoires;Simple;Lavage et repassage;2000 ;4000
+Echarpe;Accessoires;Simple;Lavage et repassage;1000 ;2000
+Gant de main;Accessoires;Simple;Lavage et repassage;1000 ;2000
+Lingerie;Accessoires;Simple;Lavage et repassage;5000 ;10000
+Manteau;Accessoires;Simple;Lavage et repassage;2000 ;4000
+Mouchoir;Accessoires;Simple;Lavage et repassage;500 ;1000
+Porte feuille H/F;Accessoires;Délicat;Lavage et repassage;3000 ;6000
+Sac à main H/F;Accessoires;Délicat;Lavage et repassage;3000 ;6000

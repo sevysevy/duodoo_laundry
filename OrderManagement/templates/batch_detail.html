@@ -52,7 +52,7 @@
                 <tbody>
                     {% for item in items %}
                         <tr>
-                            <td>N {{ item.order.id }}</td>
+                            <td>{{ item.order.order_id }}</td>
                             <td>{{ item.order.client.fullName }}</td>
                             <td>{{ item.item_type }}</td>
                             <td>{{ item.characteristic }}</td>
